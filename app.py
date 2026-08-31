@@ -12,13 +12,15 @@ st.write("Wellbeing AI for Future of Work - Kerja max 60km dari rumah")
 
 # Data dummy loker
 semua_loker = [
-    {"judul": "Admin Online Shop", "lokasi": "Kota Bandung", "jarak": "5km"},
-    {"judul": "Barista", "lokasi": "Kab. Bandung", "jarak": "12km"},
-    {"judul": "Staff IT", "lokasi": "Kab. Bandung Barat", "jarak": "20km"},
-    {"judul": "Guru Les", "lokasi": "Kab. Badung", "jarak": "300km - JAUH!"},
+    {"judul": "Admin Online Shop", "lokasi": "DKI Jakarta"},
+    {"judul": "Barista", "lokasi": "Jakarta Selatan"},
+    {"judul": "Staff IT", "lokasi": "Jakarta Pusat"},
+    {"judul": "Guru Les", "lokasi": "DKI Jakarta"},
+    {"judul": "Content Creator", "lokasi": "Jakarta Barat"},
+    {"judul": "Driver", "lokasi": "Jakarta Timur"},
 ]
-
-domisili = st.selectbox("Pilih Domisili Lo:", ["Kab. Bandung", "Kota Bandung", "Kab. Badung", "Jakarta Selatan"])
+ 
+domisili = st.selectbox("Pilih Domisili Lo:", ["DKI Jakarta", "Jakarta Selatan", "Jakarta Barat", "Jakarta Timur", "Jakarta Utara", "Jakarta Pusat"])
 
 if st.button("Cari Loker Dekat Rumah"):
     hasil = cari_loker_dekat(domisili, semua_loker)
