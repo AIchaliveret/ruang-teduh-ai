@@ -25,10 +25,13 @@ def tts_player(text, label=""):
 def render_bimbingan(tier):
     st.markdown("### 📊 Kolom Bimbingan & Nasehat Pengajaran")
     
-    # Visual yang lo minta
-    st.image("/mnt/data/resource/perjalanan_cinta_petunjuk.webp", 
-             caption="Visual: Dari mata datangnya kasih, diterima hati dan brain, disanalah jiwa lestari", 
-             use_container_width=True)
+    # Visual yang lo minta - PATH SUDAH FIX UNTUK GITHUB
+    try:
+        st.image("perjalanan_cinta_petunjuk.webp", 
+                 caption="Visual: Dari mata datangnya kasih, diterima hati dan brain, disanalah jiwa lestari", 
+                 use_container_width=True)
+    except:
+        st.info("🖼️ Visual: Dari mata -> Hati -> Brain -> Jiwa Lestari (upload gambar dulu)")
     
     if "Employee 20rb" in tier:
         col1, col2 = st.columns(2)
@@ -75,7 +78,6 @@ def render_bimbingan(tier):
         if st.button("🔊 Bacakan Spiritual MALKHUTKHA", key="spirit_mal"):
             tts_player("Bimbingan spiritual Malkhutkha: Dari mata melihat peluang, hati memahami dengan kasih, brain merancang dengan arif, disanalah jiwa lestari memimpin. Assemblying hackathon, bersaing dengan suara kebaikan.", "Spiritual Malkhutkha")
         
-        # Tombol Bersaing Suara Hackathon
         if st.button("🏆 Assemblying Hackathon - Bersaing Suara (All Indikator)", key="hackathon_voice"):
             all_text = "Bimbingan lengkap: SOP, ERP, OEE, KPI. Dari mata turun ke hati, dari hati ke brain, jiwa lestari. Kolose 3:23 Advance."
             tts_player(all_text, "Hackathon Bersaing Suara - All Indikator")
@@ -85,14 +87,13 @@ def render_bimbingan(tier):
 def render_ruang(ruang_name, ayat_default):
     st.markdown(f"""
     <div style="background:#0a3d2e;padding:20px;border-radius:15px;color:white;border:2px solid #2ecc71">
-    <h3>🎧 Suara Halus Ruang Teduh • v3.2</h3>
+    <h3>🎧 Suara Halus Ruang Teduh • v3.2 FIX</h3>
     <p><b>PERFECT FINAL • Memikat</b><br>Dari mata turun ke hati • Halus di kuping • Backsound embun pagi</p>
     <small>{ayat_default}</small>
     </div>
     """, unsafe_allow_html=True)
     st.write("")
 
-    # PESAN MEMBER DARI R1 - TETAP SAMA KAYAK SCREENSHOT LO JAM 21:37 - TIDAK DIUBAH
     if ruang_name == "R2" and st.session_state.last_pesan:
         st.success(f"📩 Pesan Member dari R1 (Tier: {st.session_state.last_tier}):")
         st.info(f"\"{st.session_state.last_pesan}\"")
@@ -100,19 +101,16 @@ def render_ruang(ruang_name, ayat_default):
             tts_player(st.session_state.last_pesan, "Membacakan pesan member - id-ID 0.85x halus")
         st.divider()
 
-    # KOLOM BIMBINGAN BARU - INI TAMBAHAN YANG LO MINTA
-    # Ambil tier dari session atau default
     current_tier = st.session_state.last_tier if st.session_state.last_tier else ("Employee 20rb/bulan" if ruang_name=="R1" else "Entrepreneur 30rb/bulan")
     render_bimbingan(current_tier)
 
-    # FORM R2 - INI GUE KUNCI, TIDAK GUE RUBAH LAGI SESUAI PERINTAH LO
-    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.2) - Akan ke-reset pas masuk R2")
+    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.2) - Form R2 Locked")
     
-    with st.form(f"form_{ruang_name}_v32_LOCKED", clear_on_submit=False):
-        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan", "Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v32")
+    with st.form(f"form_{ruang_name}_v32_FIXED", clear_on_submit=False):
+        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan", "Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v32_fix")
         pesan = st.text_area("Pesan ke Admin Email & WA", 
                              placeholder="Ketik pesan dan kesan lo di sini...", 
-                             key=f"pesan_{ruang_name}_v32", height=120,
+                             key=f"pesan_{ruang_name}_v32_fix", height=120,
                              value=st.session_state.last_pesan if ruang_name=="R1" else "")
         
         col1, col2 = st.columns(2)
@@ -141,11 +139,11 @@ def render_ruang(ruang_name, ayat_default):
 
     st.write("")
     if ruang_name == "R1":
-        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2_v32", use_container_width=True):
+        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2_v32_fix", use_container_width=True):
             st.session_state.page = "R2"
             st.rerun()
     else:
-        if st.button("⬅️ Kembali ke R1", key="kembali_r1_v32", use_container_width=True):
+        if st.button("⬅️ Kembali ke R1", key="kembali_r1_v32_fix", use_container_width=True):
             st.session_state.page = "R1"
             st.rerun()
 
