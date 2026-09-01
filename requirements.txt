@@ -1,4 +1,2 @@
 streamlit
-gtts
-numpy
-pandas
+gTTS==2.5.1
