@@ -1,15 +1,21 @@
 import streamlit as st
 import io
 from gtts import gTTS
+import os
 
 st.set_page_config(page_title="Ruang Teduh AI", page_icon="🌿", layout="centered")
 
+# SESSION
 if "page" not in st.session_state:
     st.session_state.page = "R1"
 if "last_pesan" not in st.session_state:
     st.session_state.last_pesan = ""
 if "last_tier" not in st.session_state:
     st.session_state.last_tier = ""
+if "is_member" not in st.session_state:
+    st.session_state.is_member = False
+if "nasehat_list" not in st.session_state:
+    st.session_state.nasehat_list = []
 
 def tts_player(text, label=""):
     try:
@@ -22,95 +28,129 @@ def tts_player(text, label=""):
     except Exception as e:
         st.error(f"Audio error: {e}")
 
-def render_bimbingan(tier):
-    st.markdown("### 📊 Kolom Bimbingan & Nasehat Pengajaran")
-    
-    # Visual yang lo minta - PATH SUDAH FIX UNTUK GITHUB
-    try:
-        st.image("perjalanan_cinta_petunjuk.webp", 
-                 caption="Visual: Dari mata datangnya kasih, diterima hati dan brain, disanalah jiwa lestari", 
-                 use_container_width=True)
-    except:
-        st.info("🖼️ Visual: Dari mata -> Hati -> Brain -> Jiwa Lestari (upload gambar dulu)")
-    
-    if "Employee 20rb" in tier:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("#### 📋 SOP - Employee")
-            st.write("1. Datang 5 menit lebih awal\n2. Checklist 5S\n3. Lapor harian via GDrive")
-            if st.button("🔊 Bacakan SOP", key=f"sop_{tier}"):
-                tts_player("SOP Employee: Datang lima menit lebih awal, checklist lima S, lapor harian via GDrive", "SOP Employee")
-        with col2:
-            st.markdown("#### 📈 KPI - Employee")
-            st.write("• Kehadiran 95%\n• Task selesai 100%\n• Kolaborasi tim")
-            if st.button("🔊 Bacakan KPI", key=f"kpi_{tier}"):
-                tts_player("KPI Employee: Kehadiran sembilan puluh lima persen, task selesai seratus persen, kolaborasi tim", "KPI Employee")
-        
-        st.markdown("#### 🙏 Bimbingan Spiritual - Kolose 3:23")
-        st.info("Bekerja untuk Tuhan, bukan untuk manusia. Dari mata turun ke hati, kerja jadi ibadah.")
-        if st.button("🔊 Bacakan Spiritual Employee", key=f"spirit_emp_{tier}"):
-            tts_player("Bimbingan spiritual: Bekerja untuk Tuhan bukan untuk manusia. Dari mata turun ke hati, kerja jadi ibadah, jiwa lestari.", "Spiritual Employee")
-    
-    else: # Entrepreneur 30rb
-        st.markdown("#### Level Entrepreneur - Assemblying Hackathon")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**📋 SOP**\nSOP Produksi & QC\nSOP Customer Service")
-            if st.button("🔊 SOP", key="sop_ent"):
-                tts_player("SOP Entrepreneur: Standard Operating Procedure produksi dan QC, serta customer service", "SOP Entrepreneur")
-        with c2:
-            st.markdown("**💾 ERP**\nIntegrasi GDrive/Github\nStok & Keuangan realtime")
-            if st.button("🔊 ERP", key="erp_ent"):
-                tts_player("ERP Entrepreneur: Integrasi GDrive dan Github, stok dan keuangan realtime", "ERP")
-        
-        c3, c4 = st.columns(2)
-        with c3:
-            st.markdown("**⚙️ OEE**\nAvailability 90%\nPerformance 95%\nQuality 99%")
-            if st.button("🔊 OEE", key="oee_ent"):
-                tts_player("OEE Entrepreneur: Availability sembilan puluh persen, performance sembilan puluh lima persen, quality sembilan puluh sembilan persen", "OEE")
-        with c4:
-            st.markdown("**🎯 KPI**\nOmzet, Retensi, NPS\nScale Up Team")
-            if st.button("🔊 KPI Ent", key="kpi_ent"):
-                tts_player("KPI Entrepreneur: Omzet, retensi, NPS, scale up team", "KPI Entrepreneur")
-        
-        st.markdown("#### 🙏 Bimbingan Spiritual Advance - MALKHUTKHA")
-        st.success("Level MALKHUTKHA: Staff -> Supervisor -> Manager -> Leader. Dari mata melihat peluang, hati memahami, brain merancang, jiwa lestari memimpin.")
-        if st.button("🔊 Bacakan Spiritual MALKHUTKHA", key="spirit_mal"):
-            tts_player("Bimbingan spiritual Malkhutkha: Dari mata melihat peluang, hati memahami dengan kasih, brain merancang dengan arif, disanalah jiwa lestari memimpin. Assemblying hackathon, bersaing dengan suara kebaikan.", "Spiritual Malkhutkha")
-        
-        if st.button("🏆 Assemblying Hackathon - Bersaing Suara (All Indikator)", key="hackathon_voice"):
-            all_text = "Bimbingan lengkap: SOP, ERP, OEE, KPI. Dari mata turun ke hati, dari hati ke brain, jiwa lestari. Kolose 3:23 Advance."
-            tts_player(all_text, "Hackathon Bersaing Suara - All Indikator")
+def load_nasehat_default():
+    # Coba baca dari file nasehat_mingguan.txt yang bisa lo edit di Github 1 minggu 2-3x
+    if os.path.exists("nasehat_mingguan.txt"):
+        try:
+            with open("nasehat_mingguan.txt", "r", encoding="utf-8") as f:
+                lines = [line.strip() for line in f if line.strip() and not line.strip().startswith("#")]
+                if lines:
+                    return lines
+        except:
+            pass
+    # Default kalau file belum ada
+    return [
+        "Minggu ini: Dari mata turun ke hati, kerja adalah ibadah - Kolose 3:23",
+        "SOP hari ini: 5 menit lebih awal, checklist 5S, lapor harian",
+        "ERP: Cek stok realtime di GDrive, sinkron Github",
+        "OEE: Jaga Availability 90%, Quality 99% - jiwa lestari di proses",
+        "KPI: Fokus 3 hal - kehadiran, penyelesaian task, kolaborasi",
+        "Spiritual MALKHUTKHA: Staff jadi Leader, bukan soal gaji tapi skill naik",
+        "Hackathon hari ini: Assemblying suara kebaikan, bersaing dengan kasih"
+    ]
 
-    st.divider()
-
-def render_ruang(ruang_name, ayat_default):
-    st.markdown(f"""
-    <div style="background:#0a3d2e;padding:20px;border-radius:15px;color:white;border:2px solid #2ecc71">
-    <h3>🎧 Suara Halus Ruang Teduh • v3.2 FIX</h3>
-    <p><b>PERFECT FINAL • Memikat</b><br>Dari mata turun ke hati • Halus di kuping • Backsound embun pagi</p>
-    <small>{ayat_default}</small>
+def render_r3():
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#0a3d2e,#1a6d4e);padding:20px;border-radius:15px;color:white;border:2px solid gold">
+    <h2>🌟 RUANG 3 - MEMBER AREA TETAP</h2>
+    <p>Full Bimbingan Suara • Teks Nasehat Gonta-Ganti Mingguan • Visual Optional</p>
     </div>
     """, unsafe_allow_html=True)
     st.write("")
+    
+    tier = st.session_state.last_tier or "Employee 20rb/bulan"
+    st.success(f"✅ Member Aktif: {tier} | Pesan awal: \"{st.session_state.last_pesan[:50]}...\"")
+    
+    # Load nasehat
+    if not st.session_state.nasehat_list:
+        st.session_state.nasehat_list = load_nasehat_default()
+    
+    st.markdown("### 📜 Teks Nasehat Minggu Ini (Bisa Dibaca Jadi Suara)")
+    st.caption("Edit file `nasehat_mingguan.txt` di Github 1 minggu 2-3x atau 1x seminggu - auto update jadi suara. Visual gak usah dipaksain kalo gak perlu.")
+    
+    # Toggle visual
+    show_visual = st.checkbox("Tampilkan Visual Mata->Hati->Brain (optional)", value=False)
+    if show_visual:
+        try:
+            st.image("perjalanan_cinta_petunjuk.webp", use_container_width=True)
+        except:
+            st.info("Visual: Dari mata datangnya kasih, diterima hati dan brain, jiwa lestari")
+    
+    st.divider()
+    
+    # List nasehat dengan suara
+    for i, nasehat in enumerate(st.session_state.nasehat_list):
+        col1, col2 = st.columns([4,1])
+        with col1:
+            st.write(f"**{i+1}. {nasehat}**")
+        with col2:
+            if st.button("🔊", key=f"tts_r3_{i}"):
+                tts_player(nasehat, f"Nasehat {i+1}")
+    
+    st.divider()
+    
+    if st.button("🏆 Bacakan SEMUA Nasehat Minggu Ini (Assemblying Hackathon)", type="primary", use_container_width=True):
+        all_text = " ".join(st.session_state.nasehat_list)
+        tts_player(all_text, "Full Bimbingan Mingguan - All Indikator SOP ERP OEE KPI")
+    
+    st.markdown("### ✏️ Ganti Teks Nasehat Cepat (Tanpa Ngoding)")
+    new_nasehat = st.text_area("Tulis nasehat baru (1 baris = 1 nasehat, enter untuk baru)", height=150, 
+                               placeholder="Contoh:\nSenin: Fokus SOP kebersihan\nSelasa: ERP update stok\nRabu: OEE check mesin")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("➕ Tambah ke R3", use_container_width=True):
+            if new_nasehat:
+                added = [line.strip() for line in new_nasehat.split("\n") if line.strip()]
+                st.session_state.nasehat_list.extend(added)
+                st.success(f"Ditambah {len(added)} nasehat! Sekarang total {len(st.session_state.nasehat_list)}")
+                st.rerun()
+    with c2:
+        if st.button("🔄 Reset ke Default File", use_container_width=True):
+            st.session_state.nasehat_list = load_nasehat_default()
+            st.rerun()
+    
+    st.divider()
+    colA, colB = st.columns(2)
+    with colA:
+        if st.button("⬅️ Kembali ke R1", use_container_width=True):
+            st.session_state.page = "R1"
+            st.rerun()
+    with colB:
+        if st.button("⬅️ Kembali ke R2", use_container_width=True):
+            st.session_state.page = "R2"
+            st.rerun()
 
-    if ruang_name == "R2" and st.session_state.last_pesan:
+def render_r1_r2(ruang_name):
+    # Header
+    ayat = "Kolose 3:23 - Bekerja untuk Tuhan..." if ruang_name=="R1" else "Kolose 3:23 Advance - Level MALKHUTKHA"
+    st.markdown(f"""
+    <div style="background:#0a3d2e;padding:20px;border-radius:15px;color:white;border:2px solid #2ecc71">
+    <h3>🎧 Suara Halus Ruang Teduh • v3.3 - R3 Ready</h3>
+    <p><b>PERFECT FINAL • Memikat</b><br>Dari mata turun ke hati • Halus di kuping • Backsound embun pagi</p>
+    <small>{ayat}</small>
+    </div>
+    """, unsafe_allow_html=True)
+    st.write("")
+    
+    if ruang_name=="R2" and st.session_state.last_pesan:
         st.success(f"📩 Pesan Member dari R1 (Tier: {st.session_state.last_tier}):")
         st.info(f"\"{st.session_state.last_pesan}\"")
         if st.button("🔊 Bacakan Pesan Member di R2 (Halus)", key="bacakan_member_r2", type="primary"):
-            tts_player(st.session_state.last_pesan, "Membacakan pesan member - id-ID 0.85x halus")
+            tts_player(st.session_state.last_pesan, "Membacakan pesan member")
         st.divider()
-
-    current_tier = st.session_state.last_tier if st.session_state.last_tier else ("Employee 20rb/bulan" if ruang_name=="R1" else "Entrepreneur 30rb/bulan")
-    render_bimbingan(current_tier)
-
-    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.2) - Form R2 Locked")
     
-    with st.form(f"form_{ruang_name}_v32_FIXED", clear_on_submit=False):
-        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan", "Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v32_fix")
+    # Bimbingan singkat di R1 R2
+    tier_sample = st.session_state.last_tier or ("Employee 20rb/bulan" if ruang_name=="R1" else "Entrepreneur 30rb/bulan")
+    st.markdown(f"**Tier aktif:** {tier_sample}")
+    
+    # FORM R2 LOCKED - SAMA PERSIS KAYAK SCREENSHOT LO 22:24
+    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.3) - Form R2 Locked")
+    
+    with st.form(f"form_{ruang_name}_v33", clear_on_submit=False):
+        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan", "Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v33")
         pesan = st.text_area("Pesan ke Admin Email & WA", 
                              placeholder="Ketik pesan dan kesan lo di sini...", 
-                             key=f"pesan_{ruang_name}_v32_fix", height=120,
+                             key=f"pesan_{ruang_name}_v33", height=120,
                              value=st.session_state.last_pesan if ruang_name=="R1" else "")
         
         col1, col2 = st.columns(2)
@@ -130,24 +170,59 @@ def render_ruang(ruang_name, ayat_default):
             if pesan:
                 st.session_state.last_pesan = pesan
                 st.session_state.last_tier = tier
-                st.success(f"Tersimpan! Pesan akan dibacakan di R2 nanti.")
                 if ruang_name == "R1":
                     st.session_state.page = "R2"
                     st.rerun()
+                else:
+                    # Di R2 Submit = jadi member
+                    st.session_state.is_member = True
+                    st.session_state.page = "R3"
+                    st.rerun()
             else:
-                st.warning("Tulis pesan dulu sebelum submit ke R2 bro")
+                st.warning("Tulis pesan dulu bro")
+
+    # PAYMENT AREA KHUSUS R2
+    if ruang_name=="R2":
+        st.divider()
+        st.markdown("### 💳 Pembayaran Member - 20rb / 30rb")
+        st.write("Terima pembayaran dengan gopay dan ovo dan dana dan app akun lainnya cuman klik qr kode. Via bank bisa virtual nggak (bca BNI dll)")
+        
+        try:
+            col_qr1, col_qr2 = st.columns(2)
+            with col_qr1:
+                st.image("qr_payment.png", caption="QR Gopay Ovo Dana", use_container_width=True)
+            with col_qr2:
+                st.info("**BCA Virtual:** 1234567890\n**BNI Virtual:** 9876543210\n**Gopay/Ovo/Dana:** Scan QR")
+                st.write("Employee 20rb/bulan\nEntrepreneur 30rb/bulan")
+        except:
+            st.info("Upload file qr_payment.png untuk QR Gopay Ovo Dana")
+        
+        if st.button("✅ Saya Sudah Transfer - Masuk Ruang 3 (Member)", type="primary", use_container_width=True):
+            st.session_state.is_member = True
+            st.session_state.page = "R3"
+            st.rerun()
 
     st.write("")
     if ruang_name == "R1":
-        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2_v32_fix", use_container_width=True):
+        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2_v33", use_container_width=True):
             st.session_state.page = "R2"
             st.rerun()
+        if st.session_state.is_member:
+            if st.button("🌟 Langsung ke Ruang 3 (Sudah Member)", key="to_r3_from_r1", use_container_width=True):
+                st.session_state.page = "R3"
+                st.rerun()
     else:
-        if st.button("⬅️ Kembali ke R1", key="kembali_r1_v32_fix", use_container_width=True):
+        if st.button("⬅️ Kembali ke R1", key="kembali_r1_v33", use_container_width=True):
             st.session_state.page = "R1"
             st.rerun()
+        if st.button("🌟 Masuk Ruang 3", key="to_r3_from_r2", use_container_width=True):
+            st.session_state.page = "R3"
+            st.rerun()
 
-if st.session_state.page == "R1":
-    render_ruang("R1", "Kolose 3:23 - Bekerja untuk Tuhan...")
+# ROUTER
+if st.session_state.page == "R3":
+    render_r3()
+elif st.session_state.page == "R1":
+    render_r1_r2("R1")
 else:
-    render_ruang("R2", "Kolose 3:23 Advance - Level MALKHUTKHA")
+    render_r1_r2("R2")
