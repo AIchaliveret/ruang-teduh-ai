@@ -2,103 +2,111 @@ import streamlit as st
 import io
 from gtts import gTTS
 
-# --- CONFIG ---
 st.set_page_config(page_title="Ruang Teduh AI", page_icon="🌿", layout="centered")
 
-# --- STATE ---
 if "page" not in st.session_state:
     st.session_state.page = "R1"
+if "last_pesan" not in st.session_state:
+    st.session_state.last_pesan = ""
+if "last_tier" not in st.session_state:
+    st.session_state.last_tier = ""
 
-# --- PROMPT TEMPLATE (ANTI FULGAR) ---
-PROMPT_TEMPLATE = """
-Kamu mentor Ruang Teduh. Tone: PERFECT FINAL, Memikat, Dari mata turun ke hati, Halus di kuping, Backsound embun pagi.
-Ruang: {ruang}, Ayat: {ayat}, Curhat: {curhat}, Tier: {tier}
-Aturan: Jangan fulgar/kasar. Teduh, membangun.
-Output JSON: nasehat_utama, renungan, terapan, script_audio_halus
-"""
-
-def tts_player(text, key_audio):
-    """Ganti Browser TTS yang 'tak ada suara' jadi server TTS"""
+def tts_player(text, label=""):
     try:
         tts = gTTS(text, lang='id', slow=False)
         fp = io.BytesIO()
         tts.write_to_fp(fp)
         st.audio(fp, format='audio/mp3', autoplay=False)
-        st.caption(f"🔊 Memutar via Server TTS (id-ID, 0.85x halus) - {key_audio}")
+        if label:
+            st.caption(f"🔊 {label}")
     except Exception as e:
         st.error(f"Audio error: {e}")
 
-def render_ruang(ruang_name, ayat_default, tier_info):
-    # --- BOX SUARA HALUS ---
+def render_ruang(ruang_name, ayat_default):
+    # HEADER
     st.markdown(f"""
     <div style="background:#0a3d2e;padding:20px;border-radius:15px;color:white;border:2px solid #2ecc71">
-    <h3>🎧 Suara Halus Ruang Teduh • v3.0</h3>
+    <h3>🎧 Suara Halus Ruang Teduh • v3.1</h3>
     <p><b>PERFECT FINAL • Memikat</b><br>Dari mata turun ke hati • Halus di kuping • Backsound embun pagi</p>
     <small>{ayat_default}</small>
     </div>
     """, unsafe_allow_html=True)
-    
     st.write("")
-    
-    # Contoh data - nanti ini dari LLM
+
+    # JIKA DI R2 DAN ADA PESAN DARI R1 -> TAMPILKAN + BACAKAN
+    if ruang_name == "R2" and st.session_state.last_pesan:
+        st.success(f"📩 Pesan Member dari R1 (Tier: {st.session_state.last_tier}):")
+        st.info(f"\"{st.session_state.last_pesan}\"")
+        if st.button("🔊 Bacakan Pesan Member di R2 (Halus)", key="bacakan_member_r2", type="primary"):
+            tts_player(st.session_state.last_pesan, "Membacakan pesan member - id-ID 0.85x halus")
+        st.divider()
+    elif ruang_name == "R2" and not st.session_state.last_pesan:
+        st.warning("Belum ada pesan dari R1. Silakan ketik dulu di Ruang 1 lalu Submit R1.")
+
+    # Renungan default
     if ruang_name == "R1":
-        nasehat = "Otak butuh 5 detik visual hijau sebelum bisa menerima nasehat. Lihat dulu, baru dengar, baru renungkan."
-        renungan = "Kerja bukan soal gaji, tapi skill naik, jaringan luas. Visual teamwork memicu rasa memiliki."
-        script_audio = "Kolose 3 ayat 23 - Bekerja untuk Tuhan, bukan untuk manusia. Tarik nafas 5 detik sambil lihat visual hijau."
+        renungan = "Otak butuh 5 detik visual hijau sebelum bisa menerima nasehat. Lihat dulu, baru dengar, baru renungkan."
+        tier_info = "Employee 20rb/bulan - Fokus skill naik, jaringan luas"
+        script_audio = "Kolose 3 ayat 23 - Bekerja untuk Tuhan, bukan untuk manusia. Tarik nafas 5 detik."
     else:
-        nasehat = "Kolose 3:23 Advance - Bekerja untuk Tuhan dengan level MALKHUTKHA. Dari Staff -> Supervisor -> Manager."
         renungan = "Kerja bukan soal gaji, tapi skill naik, jaringan luas. Visual teamwork memicu rasa memiliki."
-        script_audio = "Bekerja untuk Tuhan dengan level Malkhutkha. Dari Staff menjadi Supervisor, lalu Manager. Fokus bangun SOP."
+        tier_info = "Entrepreneur 30rb/bulan - Fokus SOP/ERP/OEE/KPI via GDrive/Github"
+        script_audio = "Kolose 3:23 Advance - Bekerja untuk Tuhan dengan level Malkhutkha. Dari Staff ke Manager."
 
     st.info(f"**Renungan:** {renungan}\n\n🌱 **Terapan:** {tier_info}")
-
-    # TOMBOL PLAY - INI SUDAH FIX, PAKAI KEY UNIK
-    if st.button(f"▶️ Play Nasehat {ruang_name} (Halus)", key=f"play_{ruang_name}_v3"):
-        tts_player(script_audio, ruang_name)
-
-    # Tombol browser backup
-    if st.button(f"🔊 Suara Browser {ruang_name}", key=f"browser_{ruang_name}"):
-        tts_player(script_audio, f"Browser {ruang_name}")
+    if st.button(f"▶️ Play Nasehat {ruang_name} (Halus)", key=f"play_{ruang_name}_v31"):
+        tts_player(script_audio, f"Nasehat {ruang_name}")
 
     st.divider()
 
-    # --- FORM ADMIN - INI YANG TADI ERROR ---
-    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.0) - Akan ke-reset pas masuk R2")
+    # FORM - HARGA BARU 20RB & 30RB
+    st.subheader(f"📝 Form Aktif Ruang {ruang_name[-1]} (v3.1) - Akan ke-reset pas masuk R2")
     
-    # FORM MULAI DI SINI - DI DALAM FORM CUMA BOLEH form_submit_button
-    with st.form(f"form_{ruang_name}", clear_on_submit=False):
-        tier = st.selectbox("Pilih Tier", ["Employee 200rb/bulan", "Entrepreneur 300rb/bulan", "Employee 200rb - Entrepreneur 300rb"], key=f"tier_{ruang_name}")
-        pesan = st.text_area("Pesan ke Admin Email & WA (ini yang lo ketik tadi gak ada suaranya)", 
-                             placeholder="Mau jadi member sih tapi...", key=f"pesan_{ruang_name}", height=120)
+    with st.form(f"form_{ruang_name}_v31", clear_on_submit=False):
+        # UPDATE HARGA SESUAI REQUEST LO
+        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan", "Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v31")
+        pesan = st.text_area("Pesan ke Admin Email & WA", 
+                             placeholder="Ketik pesan dan kesan lo di sini...", 
+                             key=f"pesan_{ruang_name}_v31", height=120,
+                             value=st.session_state.last_pesan if ruang_name=="R1" else "")
         
-        # DI DALAM FORM: HANYA form_submit_button YANG BOLEH
         col1, col2 = st.columns(2)
         with col1:
-            submit = st.form_submit_button("Kirim ke Admin", use_container_width=True, type="primary")
+            submit_admin = st.form_submit_button("Kirim ke Admin", use_container_width=True, type="primary")
         with col2:
-            # Kalau butuh 2 tombol submit, pakai form_submit_button juga, jangan st.button
-            submit_r2 = st.form_submit_button(f"Submit {ruang_name}", use_container_width=True)
+            label_submit = f"Submit {ruang_name} & Lanjut" if ruang_name=="R1" else f"Submit {ruang_name}"
+            submit_next = st.form_submit_button(label_submit, use_container_width=True)
 
-        if submit or submit_r2:
+        if submit_admin:
             if pesan:
-                st.success(f"Terkirim: {pesan[:50]}... Tier: {tier}")
-                # TODO: logic kirim email/WA di sini
+                st.success(f"Terkirim ke Admin: {pesan[:60]}... | Tier: {tier}")
             else:
                 st.warning("Tulis pesannya dulu bro")
 
-    # TOMBOL KEMBALI HARUS DI LUAR FORM - INI FIX UTAMA ERROR LINE 263
+        if submit_next:
+            if pesan:
+                st.session_state.last_pesan = pesan
+                st.session_state.last_tier = tier
+                st.success(f"Tersimpan! Pesan akan dibacakan di R2 nanti.")
+                if ruang_name == "R1":
+                    st.session_state.page = "R2"
+                    st.rerun()
+            else:
+                st.warning("Tulis pesan dulu sebelum submit ke R2 bro")
+
+    # TOMBOL NAVIGASI - HARUS DI LUAR FORM (FIX ERROR LINE 263)
     st.write("")
     if ruang_name == "R1":
-        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2", use_container_width=True):
+        if st.button("➡️ Masuk ke Ruang 2 (R2)", key="to_r2_v31", use_container_width=True):
             st.session_state.page = "R2"
             st.rerun()
     else:
-        if st.button("⬅️ Kembali ke R1", key="kembali_r1_fix", use_container_width=True):
+        if st.button("⬅️ Kembali ke R1", key="kembali_r1_v31", use_container_width=True):
             st.session_state.page = "R1"
             st.rerun()
 
-# --- ROUTER ---
+# ROUTER
 if st.session_state.page == "R1":
-    render_ruang("R1", "Kolose 3:23 - Bekerja untuk Tuhan...", "SOP/ERP/OEE/KPI via GDrive/Github - Employee 200rb")
+    render_ruang("R1", "Kolose 3:23 - Bekerja untuk Tuhan...")
 else:
-    render_ruang("R2", "Kolose 3:23 Advance - Bekerja untuk Tuhan dengan level MALKHUTKHA", "SOP/ERP/OEE/KPI via GDrive/Github - Entrepreneur 300rb")
+    render_ruang("R2", "Kolose 3:23 Advance - Level MALKHUTKHA")
