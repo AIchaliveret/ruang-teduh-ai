@@ -93,7 +93,6 @@ def audio_teduh_player(file_path, judul, key_id):
             from core import get_audio_aturan_utama
 st.audio(get_audio_aturan_utama(), autoplay=True)
         st.success(f"✅ {judul} - Voice Only, Tanpa Musik Stress")
-
 def generate_jawaban_tersystematis(pertanyaan, email):
     """ATURAN UTAMA: SOP -> ERP -> OEE -> KPI -> Disempurnakan Alkitab + Audio No 1"""
     umr = st.session_state.umr
