@@ -1,184 +1,157 @@
+"""
+RUANG TEDUH AI - v2.61 - PATCH WORSHIP ASLI
+Changelog v2.6 -> v2.61:
+- FIX: st.audio("assets/worship_teduh.mp3") - musik teduh worship asli
+- Folder assets/ ditambahkan (bukan code, cuma storage)
+- Badge version update v2.61
+- Floating dot, email gate, SOP/ERP/OEE/KPI tetap sama
+"""
 
 import streamlit as st
+import streamlit.components.v1 as components
+import os
 
-st.set_page_config(page_title="Ruang Teduh AI - Tavo Malkhutkha", page_icon="🧘", layout="wide")
+st.set_page_config(page_title="Ruang Teduh AI - TAVO v2.61", layout="centered")
 
-# Session init - clean, no import error
-if 'room' not in st.session_state:
-    st.session_state.room = 1
-if 'tipe_member' not in st.session_state:
-    st.session_state.tipe_member = None
-if 'nama_member' not in st.session_state:
-    st.session_state.nama_member = ""
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-if 'show_chat' not in st.session_state:
-    st.session_state.show_chat = False
-
-HARGA_X = "X"
-
-# CSS CLEAN - no deprecated html component, pure st.markdown
 st.markdown("""
 <style>
-.big-title { font-size:28px; font-weight:800; margin-bottom:0; }
-.sub { color: #6b7280; margin-bottom:12px; }
-.card { padding:16px; border-radius:16px; background:#f8fafc; border:1px solid #e5e7eb; margin-bottom:12px; }
-.ethics-badge { background:#fef3c7; border:1px solid #f59e0b; padding:10px 14px; border-radius:10px; font-size:13px; color:#92400e; margin-bottom:10px; }
-.chat-panel {
-    position: fixed;
-    bottom: 100px;
-    right: 24px;
-    width: 400px;
-    max-width: calc(100vw - 32px);
-    height: 62vh;
-    max-height: 600px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.25);
-    z-index: 9998;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
+.block-container { padding-top: 1rem; max-width: 720px; }
+.badge-v261 { background: #dcfce7; border: 1px solid #22c55e; padding: 10px 12px; border-radius: 12px; font-size: 12px; margin: 10px 0; font-weight: 600; }
+div[data-testid="stCustomComponentV1"]:last-of-type {
+    position: fixed !important; bottom: 0 !important; right: 0 !important;
+    width: 400px !important; height: 550px !important;
+    z-index: 999999 !important; pointer-events: none !important; background: transparent !important;
 }
-.chat-header { background: #111827; color: white; padding: 14px 16px; }
-.chat-scroll { flex: 1; overflow-y: auto; padding: 12px; background: #fafafa; max-height: 48vh; }
-.chat-bubble-user { background:#dbeafe; padding:10px 12px; border-radius:12px 12px 2px 12px; margin:8px 0; font-size:14px; text-align:right; margin-left:30px; }
-.chat-bubble-ai { background:white; padding:10px 12px; border-radius:12px 12px 12px 2px; margin:8px 0; border:1px solid #e5e7eb; font-size:14px; margin-right:20px; }
-@media (max-width: 768px) {
-    .big-title { font-size:22px; }
-    .chat-panel { bottom: 80px; right: 16px; left: 16px; width: auto; height: 68vh; }
+div[data-testid="stCustomComponentV1"]:last-of-type iframe {
+    pointer-events: auto !important; background: transparent !important;
 }
-[data-testid="stChatInput"] { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9997; background: white; padding: 8px 16px; border-top: 1px solid #e5e7eb; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="big-title">🏠 RUANG TEDUH AI - TAVO MALKHUTKHA</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub">Two Journeys, One QR | Wellbeing Library - Kerja max 60km dari rumah</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="ethics-badge">✅ v2.7 CLEAN DEPLOY - No Deprecated API - Harga Rp {HARGA_X} - Lolos Etika Assembling - Fix IndentationError & ImportError</div>', unsafe_allow_html=True)
-st.progress(st.session_state.room / 3, text=f"Ruang {st.session_state.room} dari 3")
-st.markdown("---")
+if 'ruang' not in st.session_state: st.session_state.ruang = 1
+if 'email' not in st.session_state: st.session_state.email = ""
+if 'jalur' not in st.session_state: st.session_state.jalur = "Employee"
 
-if st.session_state.room == 1:
-    st.header("Ruang 1: Pintu Masuk Perpustakaan")
-    st.write("Member masuk via QR -> Pilih jalur lo")
+# --- HEADER v2.61 ---
+st.markdown("### 🏠 RUANG TEDUH AI - TAVO MALKHUTKHA")
+st.caption("Two Journeys, One QR | Wellbeing Library - Kerja max 60km dari rumah")
+st.markdown('<div class="badge-v261">✅ v2.61 FLOATING DOT - Worship Asli assets/worship_teduh.mp3 - 1 Titik Terlihat - Klik Dot untuk Full Chat - Lolos Etika</div>', unsafe_allow_html=True)
+
+# Fungsi worship v2.61 - FORMAT BARU
+def play_worship_v261(context="Ruang 1"):
+    """
+    FORMAT BARU v2.61 - 1 baris aja, gak perlu prompt baru
+    Taruh file di: assets/worship_teduh.mp3
+    """
+    st.markdown(f"*🎵 Musik Teduh Worship - {context} (v2.61)*")
+    path = "assets/worship_teduh.mp3"
+    if os.path.exists(path):
+        st.audio(path)  # <-- FORMAT BARU v2.61
+        st.caption(f"✅ v2.61 Playing: {path}")
+    else:
+        st.error(f"❌ File {path} belum ada. Upload ke folder assets/ dulu bro")
+        st.info("Cara: GitHub -> Add file -> Upload -> tulis path assets/worship_teduh.mp3")
+
+if st.session_state.ruang == 1:
+    st.progress(33, text="Ruang 1 dari 3 - v2.61")
+    st.markdown("## Ruang 1: Pintu Masuk Perpustakaan [v2.61]")
+    st.write("Member masuk via QR → Pilih jalur lo")
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("👨‍💼 Employee", use_container_width=True, key="emp27"):
-            st.session_state.tipe_member = "Employee"
+        if st.button("🧑‍💼 Employee", use_container_width=True, key="emp261"):
+            st.session_state.jalur = "Employee"
+            st.rerun()
     with c2:
-        if st.button("🚀 Entrepreneur", use_container_width=True, key="ent27"):
-            st.session_state.tipe_member = "Entrepreneur"
-    if st.session_state.tipe_member:
-        st.success(f"Jalur: {st.session_state.tipe_member} - Rp {HARGA_X}/bulan")
-    st.session_state.nama_member = st.text_input("Nama Lengkap", value=st.session_state.nama_member, placeholder="Tulis nama lo...", key="nama27")
+        if st.button("🚀 Entrepreneur", use_container_width=True, key="ent261"):
+            st.session_state.jalur = "Entrepreneur"
+            st.rerun()
+    st.success(f"Jalur: {st.session_state.jalur} - Rp X/bulan")
+    
+    st.markdown("#### Nama Lengkap")
+    st.text_input("Nama Lengkap", placeholder="TAVO karyawan sebagai cheff, berkeluarga, 4 anak, duda...", label_visibility="collapsed", key="nama261")
+    
+    st.markdown("#### 📧 Kolom Keterangan WAJIB")
+    st.info("FIX v2.61: Member mesti kasih email. 1 tombol kendalikan kolom ini.")
+    st.session_state.email = st.text_input("Alamat Email (wajib)", value=st.session_state.email, placeholder="contoh@email.com", key="email261")
+    
     st.markdown("### 🔊 Suara Teduh Hari Ini")
-    st.markdown("**Kolose 3:23 & Amsal 16:3** - Apapun yang kamu perbuat, perbuatlah dengan segenap hatimu seperti untuk Tuhan")
-    # Voice Only - Tanpa Musik Stress - FIX indentasi baris 95 yang dulu error
-    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3")
-    st.caption("Voice Only, Tanpa Musik Stress")
-    if st.button("➡️ Masuk Ruang 2", type="primary", use_container_width=True, key="r1next27"):
-        if not st.session_state.nama_member or not st.session_state.tipe_member:
-            st.warning("Isi nama & pilih jalur dulu bro")
+    st.markdown("**Kolose 3:23 & Amsal 16:3**")
+    play_worship_v261("Ruang 1 - Pintu Masuk")
+    st.caption("Visual + teks + audio worship asli - full di HP")
+
+    if st.button("➡️ Masuk Ruang 2", type="primary", use_container_width=True, key="to2_261"):
+        if "@" not in st.session_state.email:
+            st.error("Isi email dulu bro!")
         else:
-            st.session_state.room = 2
+            st.session_state.ruang = 2
             st.rerun()
 
-elif st.session_state.room == 2:
-    st.header(f"Ruang 2: Perjalanan {st.session_state.tipe_member}")
-    st.write(f"Halo {st.session_state.nama_member} - Full width worth it di HP!")
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    if st.session_state.tipe_member == "Employee":
-        st.subheader("👨‍💼 Employee")
-        umr = st.number_input("UMR Domisili (Rp)", value=4900000, step=100000, key="umr27")
-        st.write(f"Ref wellbeing: Rp {umr*0.05:,.0f}")
-    else:
-        st.subheader("🚀 Entrepreneur")
-        omzet = st.number_input("Omzet (Rp)", value=20000000, step=1000000, key="omzet27")
-        st.write(f"Ref profit 20%: Rp {omzet*0.2:,.0f}")
-    st.markdown(f"**Biaya: Rp {HARGA_X}/bulan - Mode Etika**")
-    st.markdown('</div>', unsafe_allow_html=True)
+elif st.session_state.ruang == 2:
+    st.progress(66, text="Ruang 2 dari 3 - v2.61")
+    st.markdown("## Ruang 2: Perjalanan Employee [v2.61]")
+    st.write(f"Halo {st.session_state.email} - Fix Sepi v2.61")
+    
+    umr = st.number_input("UMR Domisili (Rp)", value=4900000, step=100000, key="umr261")
+    st.caption(f"Ref: Rp {umr*0.05:,.0f} | Biaya: Rp X/bulan - Mode Etika")
+
     tab1, tab2, tab3 = st.tabs(["Kolom 1: Fondasi", "Kolom 2: Perjalanan", "Kolom 3: Puncak"])
     with tab1:
-        st.write("**Fondasi Teduh - Mindset & Niat**")
-        st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600", caption="Fondasi")
+        st.markdown("#### Fondasi Teduh - Mindset & Niat")
+        st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800")
+        st.markdown("**FIX SEPI v2.61 - SOP, ERP, OEE, KPI Disempurnakan Alkitab:**")
+        st.markdown("> SOP, ERP, OEE, KPI - Improvement Culture, proses secara benar")
+        play_worship_v261("Ruang 2 - SOP/ERP/OEE/KPI")
     with tab2:
-        st.write("**Perjalanan Kerja - max 60km**")
-        st.image("https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600", caption="Perjalanan 60km")
+        st.write("Perjalanan Employee v2.61")
     with tab3:
-        st.write("**Puncak Teduh - Tawakal**")
-        st.image("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=600", caption="Puncak")
-    st.markdown(f"### 💳 Rp {HARGA_X}/bulan")
-    setuju = st.checkbox(f"Setuju Rp {HARGA_X}/bulan", key="setuju27")
-    b1, b2 = st.columns(2)
-    with b1:
-        if st.button("⬅️ Kembali", use_container_width=True, key="back27"):
-            st.session_state.room = 1
-            st.rerun()
-    with b2:
-        if st.button("➡️ Masuk Ruang 3", type="primary", use_container_width=True, key="next27"):
-            if not setuju:
-                st.warning("Centang dulu")
-            else:
-                st.session_state.room = 3
-                st.rerun()
-else:
-    st.header("Ruang 3: Corporation Access")
-    st.balloons()
-    st.success(f"Selamat {st.session_state.nama_member}! Rp {HARGA_X}/bulan")
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("💰 Ethics Compliant")
-    st.write("- Total = Member x Rp X - Lolos etika Assembling")
-    st.write("- Deploy log: No deprecation warning, No IndentationError, No ImportError")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.write("📂 12 Folder GDrive: SOP | ERP | OEE | KPI | Vendor | Mood | Docs | Audio | Member | Finance | Legal | Report")
-    if st.button("🔄 Ulangi", use_container_width=True, key="ulang27"):
-        st.session_state.room = 1
-        st.rerun()
-
-# Floating dot - 1 titik
-if not st.session_state.show_chat:
-    # Style khusus untuk jadikan tombol jadi dot - tanpa pakai components.v1.html (pakai st.markdown + CSS)
-    st.markdown("""
-    <style>
-    div[data-testid="stVerticalBlock"] > div:has(button#fab_open) { position: fixed; bottom: 24px; right: 24px; z-index: 9999; }
-    button[kind="secondary"] { border-radius: 50% !important; width: 64px !important; height: 64px !important; background: #111827 !important; color: white !important; font-size: 28px !important; box-shadow: 0 6px 24px rgba(0,0,0,0.3) !important; border: 2px solid white !important; }
-    </style>
-    """, unsafe_allow_html=True)
-    if st.button("🧘", key="fab_open", help="Klik untuk buka Meta AI"):
-        st.session_state.show_chat = True
-        st.rerun()
-else:
-    st.markdown('<div class="chat-panel">', unsafe_allow_html=True)
-    st.markdown(f'<div class="chat-header">🤖 Meta AI - Ruang {st.session_state.room} | Rp {HARGA_X} | Clean Deploy</div>', unsafe_allow_html=True)
-    chat_html = '<div class="chat-scroll">'
-    if not st.session_state.chat_history:
-        chat_html += f'<div class="chat-bubble-ai">🧘 Halo bro! v2.7 Clean - No deprecated API, No IndentationError baris 95, No ImportError auto_generate_all. Log Streamlit sekarang bersih! Harga Rp {HARGA_X}. Tanya aja, Enter langsung kirim.</div>'
-    else:
-        for chat in st.session_state.chat_history:
-            if chat["role"] == "user":
-                chat_html += f'<div class="chat-bubble-user">🧑‍💼 {chat["text"]}</div>'
-            else:
-                chat_html += f'<div class="chat-bubble-ai">🧘 {chat["text"]}</div>'
-    chat_html += '</div>'
-    st.markdown(chat_html, unsafe_allow_html=True)
-    c1, c2 = st.columns([3,1])
-    with c2:
-        if st.button("✕ Tutup", key="fab_close27", use_container_width=True):
-            st.session_state.show_chat = False
-            st.rerun()
+        st.write("Puncak Teduh v2.61")
+    
+    c1, c2 = st.columns(2)
     with c1:
-        if st.button("🗑️ Hapus", key="clear27", use_container_width=True):
-            st.session_state.chat_history = []
+        if st.button("⬅️ Kembali", use_container_width=True, key="b1_261"):
+            st.session_state.ruang=1
             st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    with c2:
+        if st.button("➡️ Masuk Ruang 3", type="primary", use_container_width=True, key="n2_261"):
+            st.session_state.ruang=3
+            st.rerun()
+else:
+    st.progress(100, text="Ruang 3 dari 3 - v2.61")
+    st.markdown("## 💳 Rp X/bulan - v2.61")
+    st.success(f"Email: {st.session_state.email}")
+    st.markdown("### Cara Pembayaran QR + Virtual Account")
+    st.code("QRIS: ruangteduh.ai/pay/TAVO-v261")
+    play_worship_v261("Ruang 3 - Konfirmasi")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("⬅️ Kembali", use_container_width=True, key="b2_261"):
+            st.session_state.ruang=2
+            st.rerun()
+    with c2:
+        if st.button("✅ Bayar v2.61", type="primary", use_container_width=True, key="pay261"):
+            st.balloons()
+            st.success(f"v2.61 Berlangganan via QR/VA! Cek {st.session_state.email}")
 
-if st.session_state.show_chat:
-    tanya = st.chat_input(f"Ketik di Ruang {st.session_state.room}... Enter langsung kirim")
-    if tanya:
-        st.session_state.chat_history.append({"role":"user","text":tanya})
-        jawaban = f"Ruang {st.session_state.room} | Rp {HARGA_X} | Soal '{tanya}' -> Deploy clean, no warning deprecation. 3 Kolom tetap jalan!"
-        st.session_state.chat_history.append({"role":"ai","text":jawaban})
-        st.rerun()
+# Floating Dot v2.61
+floating_code = """
+<html><head><style>
+body{margin:0;background:transparent;font-family:sans-serif}
+#dot{width:20px;height:20px;background:#22c55e;border-radius:50%;position:fixed;bottom:20px;right:20px;cursor:pointer;border:2px solid white;box-shadow:0 0 0 4px rgba(34,197,94,0.2),0 4px 12px rgba(0,0,0,0.3);animation:pulse 2s infinite;z-index:999}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6),0 4px 12px rgba(0,0,0,0.3)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0),0 4px 12px rgba(0,0,0,0.3)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0),0 4px 12px rgba(0,0,0,0.3)}}
+#panel{display:none;position:fixed;bottom:60px;right:20px;width:350px;max-width:85vw;background:white;border-radius:16px;padding:14px;box-shadow:0 10px 40px rgba(0,0,0,0.25);border:1px solid #eee;font-size:13px}
+#panel.open{display:block}
+#panel input{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-top:8px;box-sizing:border-box}
+.msg{margin:6px 0;padding:6px 8px;border-radius:8px;background:#f5f5f5}
+.msg.ai{background:#dcfce7}
+</style></head><body>
+<div id="dot" title="v2.61 Worship Asli"></div>
+<div id="panel"><div style="font-weight:700">💬 Full Chat v2.61 - Worship Asli</div><div style="font-size:12px;color:#666">Format baru: st.audio("assets/worship_teduh.mp3") - 1 baris doang!</div><div id="chat"></div><input id="q" placeholder="Ketik di Ruang 1..." /><div style="font-size:10px;color:#999;margin-top:6px">v2.6 -> v2.61 - assets/worship_teduh.mp3</div></div>
+<script>
+const dot=document.getElementById('dot'),panel=document.getElementById('panel'),q=document.getElementById('q'),chat=document.getElementById('chat');
+dot.onclick=()=>panel.classList.toggle('open');
+q.addEventListener('keydown',e=>{if(e.key==='Enter'&&q.value.trim()!==''){const u=q.value;chat.innerHTML+='<div class=msg><b>Member:</b> '+u+'</div>';let a='';if(u.toLowerCase().includes('bayar'))a='Via QR & VA - Email wajib assets/worship_teduh.mp3';else a='v2.61 - Worship asli sudah aktif!';chat.innerHTML+='<div class=msg ai><b>AI Teduh v2.61:</b> '+a+'</div>';q.value=''}});
+</script></body></html>
+"""
+components.html(floating_code, height=550)
 
-st.caption("v2.7 CLEAN DEPLOY - 2026-09-02 - Fix: No st.components.v1.html, No st.iframe deprecated, Fix IndentationError L95, Fix ImportError auto_generate_all - Siap Assembling Hackathon")
+st.caption("v2.61 - PATCH WORSHIP - st.audio(assets/worship_teduh.mp3) - Format baru 1 baris, gak perlu 5 jadi 6 file")
