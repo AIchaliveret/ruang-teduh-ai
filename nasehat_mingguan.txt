@@ -1,3 +1,46 @@
-Senin: SOP cek kebersihan
-Selasa: ERP update stok jam 9 pagi
-Rabu: OEE mesin 1 harus 95%
+Ruang Teduh AI - TAVO MALKHUTKHA
+V28.1 AUDIO FIX + V2.7 Wellbeing Library
+Nasehat Mingguan - SOP -> ERP -> OEE -> KPI Disempurnakan Alkitab
+Mode: HP Worth It Full Width | Kerja max 60km dari rumah
+
+=== SENIN: SOP - Cek Kebersihan (Kolose 3:23) ===
+SOP: Datang, Doa, Kerja seperti untuk Tuhan
+- Cek kebersihan Ruang 1,2,3 jam 07.00
+- Pastikan no music stress, hanya Worship Teduh Slow Piano + Nature
+- Audio: Suara Teduh Hari Ini - Klik untuk bunyi (V28.1 FIX)
+- KPI: Availability 100% hadir tepat waktu
+
+=== SELASA: ERP - Update Stok Jam 9 Pagi (Versi Hati) ===
+ERP Hati:
+- M = Manusia: Sapa member via email (Wajib cek email_member di Ruang 1)
+- M = Material: Update stok waktu & akses GDrive Kolom1_Fondasi.pdf jam 09.00
+- M = Money: UMR Domisili Rp 4,900,000 - cek QRIS & VA BCA/Mandiri/BRI masuk
+- Catat di Kolom Keterangan - 1 Tombol Kendali Utama
+
+=== RABU: OEE - Mesin 1 Harus 95% (Versi Rohani) ===
+OEE Rohani:
+- Availability: Mesin Hati hadir 100% - jangan sepi, jelaskan dengan SUARA + TEKS
+- Performance: 1% better tiap hari, tidak mengeluh, putar audio Ruang 2: SOP, ERP, OEE, KPI
+- Quality: Hasil memuliakan Tuhan, improvement culture yang lebih baik
+- Target: OEE Mesin 1 = 95% (Gabungan Iman + Kerja)
+
+=== KAMIS: KPI - Kingdom Performance Indicator (Amsal 16:3) ===
+KPI: Serahkan perbuatanmu kepada Tuhan, maka terlaksanalah rencanamu
+- KPI Iman + KPI Kerja = Terlaksana
+- Review nasehat tabur tuai mingguan
+- Follow up email member yang belum bayar Ruang 3
+
+=== JUMAT: Audio System - Worship Teduh ===
+- Ganti semua musik stress jadi Worship Teduh Instrumental Slow Piano + Nature
+- Cek V28.1 AUDIO FIX: Speaker PASTI bunyi asal di-KLIK, gak auto
+- Judul: Suara Teduh Hari Ini - Visual + Teks + Audio Full di HP
+
+=== SABTU: Wellbeing Library & Floating Dot ===
+- Kerja max 60km dari rumah - jaga keluarga
+- Cek Floating Dot (Kolom Lo + Meta AI Generate Semua Pertanyaan Ruang Teduh)
+- Semua jawaban WAJIB via SOP->ERP->OEE->KPI + Audio No 1
+
+=== CATATAN DEVELOPER: aichaliveret ===
+- No Music Stress: USE_MUSIC=False, BACKGROUND_MUSIC=None
+- Flag doang gak cukup, wajib ganti nama file + reboot app di Streamlit Cloud
+- File audio: ruang1_V28.1_NO_MUSIC.mp3, ruang2_V28.1_NO_MUSIC.mp3, ruang3_V28.1_NO_MUSIC.mp3
