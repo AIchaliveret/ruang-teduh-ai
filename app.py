@@ -90,7 +90,8 @@ def audio_teduh_player(file_path, judul, key_id):
             st.audio(file_path, format="audio/mp3", autoplay=False)
         except:
             st.info(f"🔈 Audio: {judul} - Suara Teduh Hari Ini (Worship Slow Piano + Nature)")
-            st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", autoplay=False)
+            from core import get_audio_aturan_utama
+st.audio(get_audio_aturan_utama(), autoplay=True)
         st.success(f"✅ {judul} - Voice Only, Tanpa Musik Stress")
 
 def generate_jawaban_tersystematis(pertanyaan, email):
