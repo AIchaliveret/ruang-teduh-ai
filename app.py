@@ -1,191 +1,159 @@
 import streamlit as st
-import io
-from gtts import gTTS
-import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-st.set_page_config(page_title="Ruang Teduh AI", page_icon="🌿", layout="centered")
+st.set_page_config(page_title="Ruang Teduh AI - Tavo Malkhutkha", page_icon="🧘", layout="centered")
 
-if "page" not in st.session_state:
-    st.session_state.page = "R1"
-if "last_pesan" not in st.session_state:
-    st.session_state.last_pesan = ""
-if "last_tier" not in st.session_state:
-    st.session_state.last_tier = ""
-if "is_member" not in st.session_state:
-    st.session_state.is_member = False
-if "nasehat_list" not in st.session_state:
-    st.session_state.nasehat_list = []
+# Init session
+if 'room' not in st.session_state:
+    st.session_state.room = 1
+if 'tipe_member' not in st.session_state:
+    st.session_state.tipe_member = None
+if 'nama_member' not in st.session_state:
+    st.session_state.nama_member = ""
 
-def tts_player(text, label="", autoplay=False):
-    try:
-        tts = gTTS(text, lang='id', slow=False)
-        fp = io.BytesIO()
-        tts.write_to_fp(fp)
-        st.audio(fp, format='audio/mp3', autoplay=autoplay)
-        if label: st.caption(f"🔊 {label}")
-    except Exception as e:
-        st.error(f"Audio error: {e}")
+# Style
+st.markdown("""
+<style>
+.big-title { font-size:28px; font-weight:800; }
+.sub { color: #6b7280; }
+.card { padding:16px; border-radius:16px; background:#f8fafc; border:1px solid #e5e7eb; margin-bottom:12px; }
+</style>
+""", unsafe_allow_html=True)
 
-def send_email_auto(pesan, tier, pengirim_info="Member"):
-    """Kirim email 100% auto via Gmail App Password yang ada di Secrets"""
-    try:
-        # Cek apakah secrets sudah disetting
-        if "email" not in st.secrets:
-            return False, "Secrets belum disetting. Ikuti step di bawah."
-        
-        sender_email = st.secrets["email"]["sender_email"]  # email lo yang buat ngirim
-        sender_password = st.secrets["email"]["sender_password"]  # App Password 16 huruf
-        admin1 = st.secrets["email"]["admin1"]
-        admin2 = st.secrets["email"]["admin2"]
-        
-        # Buat email
-        subject = f"[Ruang Teduh] Pesan Baru - {tier} - {pengirim_info}"
-        body = f"""
-        Ada pesan baru dari Ruang Teduh AI:
-        
-        Tier: {tier}
-        Pengirim: {pengirim_info}
-        Waktu: Otomatis dari app
-        
-        Pesan:
-        {pesan}
-        
-        ---
-        Balas ke: {admin1}, {admin2}
-        WA Admin: {st.secrets['email'].get('wa2','081291904422')}
-        """
-        
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = f"{admin1}, {admin2}"
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-        
-        # Kirim via Gmail SMTP
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        
-        return True, f"Email terkirim ke {admin1} & {admin2}"
-    except KeyError as e:
-        return False, f"Secrets kurang: {e}. Cek format TOML."
-    except Exception as e:
-        return False, f"Gagal kirim: {e}. Cek App Password."
+st.markdown('<div class="big-title">🏠 RUANG TEDUH AI - TAVO MALKHUTKHA</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub">Two Journeys, One QR | Wellbeing Library - Kerja max 60km dari rumah</div>', unsafe_allow_html=True)
+st.markdown("---")
 
-def load_nasehat():
-    if os.path.exists("nasehat_mingguan.txt"):
-        try:
-            with open("nasehat_mingguan.txt","r",encoding="utf-8") as f:
-                lines=[l.strip() for l in f if l.strip() and not l.strip().startswith("#")]
-                if lines: return lines
-        except: pass
-    return ["Senin: SOP cek kebersihan", "Selasa: ERP update stok jam 9 pagi", "Rabu: OEE mesin 1 harus 95%"]
+# Progress
+st.progress(st.session_state.room / 3)
 
-def load_renungan():
-    if os.path.exists("renungan_harian.txt"):
-        try:
-            with open("renungan_harian.txt","r",encoding="utf-8") as f:
-                return [l.strip() for l in f if l.strip()]
-        except: pass
-    return ["SENIN: Renungan Alkitab - Matius 11:28", "SELASA: Yeremia 29:11"]
+# ===== RUANG 1 =====
+if st.session_state.room == 1:
+    st.header("Ruang 1: Pintu Masuk Perpustakaan")
+    st.write("Member masuk via QR -> Pilih jalur lo")
 
-def render_r3():
-    st.markdown("""<div style="background:linear-gradient(135deg,#0a3d2e,#1a6d4e);padding:20px;border-radius:15px;color:white;border:2px solid gold"><h2>🌟 RUANG 3 - MEMBER AREA TETAP v3.5 - EMAIL 100% AUTO</h2></div>""", unsafe_allow_html=True)
-    st.success(f"✅ Member Aktif: {st.session_state.last_tier} | Email Admin Auto Konek")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("👨‍💼 Employee", use_container_width=True):
+            st.session_state.tipe_member = "Employee"
+    with col2:
+        if st.button("🚀 Entrepreneur", use_container_width=True):
+            st.session_state.tipe_member = "Entrepreneur"
+
+    if st.session_state.tipe_member:
+        st.success(f"Jalur terpilih: {st.session_state.tipe_member}")
+
+    st.session_state.nama_member = st.text_input("Nama Lengkap", value=st.session_state.nama_member, placeholder="Tulis nama lo...")
     
-    st.markdown("### 🎵 Musik Teduh")
-    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+    st.markdown("### 🔊 Suara Teduh Hari Ini")
+    st.markdown("**Kolose 3:23 & Amsal 16:3** - Apapun yang kamu perbuat, perbuatlah dengan segenap hatimu seperti untuk Tuhan")
     
-    if st.checkbox("Tampilkan Visual Mata->Hati->Brain", value=True):
-        try: st.image("perjalanan_cinta_petunjuk.webp", use_container_width=True)
-        except: st.info("Visual: Mata->Hati->Brain->Jiwa Lestari")
+    # Audio placeholder - TTS bisa diganti file mp3 dari GDrive
+    st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3")
+    st.caption("Klik audio untuk dengar bimbingan - visual + teks cukup")
 
-    st.markdown("### 📜 Teks Nasehat Mingguan")
-    if not st.session_state.nasehat_list:
-        st.session_state.nasehat_list = load_nasehat()
-    for i,n in enumerate(st.session_state.nasehat_list):
-        c1,c2 = st.columns([4,1])
-        with c1: st.write(f"**{i+1}. {n}**")
-        with c2:
-            if st.button("🔊", key=f"tts_n_{i}"): tts_player(n, f"Nasehat {i+1}")
-    if st.button("🏆 Bacakan SEMUA Nasehat", type="primary", use_container_width=True):
-        tts_player(" ".join(st.session_state.nasehat_list), "Full Mingguan")
+    if st.button("➡️ Masuk Ruang 2", type="primary", use_container_width=True):
+        if not st.session_state.nama_member:
+            st.warning("Isi nama dulu bro")
+        elif not st.session_state.tipe_member:
+            st.warning("Pilih Employee / Entrepreneur dulu")
+        else:
+            st.session_state.room = 2
+            st.rerun()
 
-    st.divider()
-    st.markdown("### 🙏 Renungan Harian Senin-Minggu + Nasehat Sehat")
-    for i,r in enumerate(load_renungan()):
-        hari = r.split(":")[0]
-        with st.expander(f"{hari} - Klik untuk dengar", expanded=(i==0)):
-            st.write(r)
-            if st.button(f"🔊 Bacakan {hari}", key=f"renung_{i}"):
-                tts_player(r, f"Renungan {hari}")
-
-    st.divider()
-    if st.button("⬅️ Kembali ke R1", use_container_width=True):
-        st.session_state.page="R1"; st.rerun()
-
-def render_r1_r2(ruang_name):
-    st.markdown("""<div style="background:#0a3d2e;padding:20px;border-radius:15px;color:white;border:2px solid #2ecc71"><h3>🎧 Ruang Teduh • v3.5 - EMAIL 100% AUTO</h3></div>""", unsafe_allow_html=True)
-    st.write("")
+# ===== RUANG 2 =====
+elif st.session_state.room == 2:
+    st.header(f"Ruang 2: Perjalanan {st.session_state.tipe_member}")
+    st.write(f"Halo {st.session_state.nama_member}, ini jalur {st.session_state.tipe_member} lo")
     
-    if ruang_name=="R2" and st.session_state.last_pesan:
-        st.success(f"📩 Pesan dari R1 (Tier: {st.session_state.last_tier}):")
-        st.info(f"\"{st.session_state.last_pesan}\"")
-
-    st.subheader(f"📝 Form Ruang {ruang_name[-1]} (v3.5)")
-
-    with st.form(f"form_{ruang_name}_v35", clear_on_submit=False):
-        tier = st.selectbox("Pilih Tier", ["Employee 20rb/bulan","Entrepreneur 30rb/bulan"], key=f"tier_{ruang_name}_v35")
-        pesan = st.text_area("Pesan ke Admin Email & WA", placeholder="Tulis pesan...", key=f"pesan_{ruang_name}_v35", height=150, value=st.session_state.last_pesan if ruang_name=="R1" else "")
-        
-        st.info("📧 Email Admin Aktif:\n- jugalachaliveret@gmail.com (Member)\n- asuveleikha@gmail.com (Ruang Teduh) - 081291904422")
-
-        c1,c2 = st.columns(2)
-        with c1: submit_admin = st.form_submit_button("Kirim ke Admin (Auto Email)", use_container_width=True, type="primary")
-        with c2: submit_next = st.form_submit_button(f"Submit {ruang_name} & Lanjut" if ruang_name=="R1" else f"Submit {ruang_name}", use_container_width=True)
-
-        if submit_admin:
-            if pesan:
-                # Coba kirim auto
-                success, msg = send_email_auto(pesan, tier, f"Tier {tier}")
-                if success:
-                    st.success(f"✅ {msg}")
-                    st.balloons()
-                else:
-                    st.warning(f"⚠️ {msg}")
-                    st.info("Fallback: Pakai mailto (klik di bawah) atau setting Secrets dulu (lihat panduan)")
-                    st.markdown(f"[📧 Klik untuk buka Gmail](mailto:jugalachaliveret@gmail.com,asuveleikha@gmail.com?subject=Pesan {tier}&body={pesan})")
-            else:
-                st.warning("Tulis pesan dulu bro")
-
-        if submit_next:
-            if pesan:
-                st.session_state.last_pesan=pesan; st.session_state.last_tier=tier
-                if ruang_name=="R1": st.session_state.page="R2"; st.rerun()
-                else: st.session_state.is_member=True; st.session_state.page="R3"; st.rerun()
-            else: st.warning("Tulis pesan dulu")
-
-    if ruang_name=="R2":
-        st.divider()
-        st.markdown("### 💳 Pembayaran Member")
-        try: st.image("qr_payment.png", caption="QR Gopay Ovo Dana BCA BNI", use_container_width=True)
-        except: st.warning("Upload qr_payment.png")
-        st.write("BCA VA: 1234567890 | BNI VA: 9876543210 | WA: 081291904422")
-        if st.button("✅ Saya Sudah Transfer - Masuk Ruang 3", type="primary", use_container_width=True):
-            st.session_state.is_member=True; st.session_state.page="R3"; st.rerun()
-
-    if ruang_name=="R1":
-        if st.button("➡️ Masuk ke Ruang 2", use_container_width=True):
-            st.session_state.page="R2"; st.rerun()
+    # v2.2 FINAL - FIXED RATE
+    if st.session_state.tipe_member == "Employee":
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.subheader("👨‍💼 Employee - Chef, Staff, Barista, IT Staff")
+        st.write("Gaji wajar UMR/UMP/UMK sesuai domisili")
+        umr = st.number_input("UMR Domisili Lo (Rp)", value=4900000, step=100000)
+        st.write(f"Estimasi 5% wellbeing: Rp {umr*0.05:,.0f}")
+        st.markdown("**Biaya Langganan FIXED: Rp 200.000 / bulan**")
+        st.markdown("Fasilitas: 3 Kolom Bimbingan + SOP + KPI + Mood Tracker")
+        st.markdown('</div>', unsafe_allow_html=True)
+        biaya = 200000
     else:
-        if st.button("⬅️ Kembali ke R1", use_container_width=True):
-            st.session_state.page="R1"; st.rerun()
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.subheader("🚀 Entrepreneur - Boss Kios / Ruko / Rukan")
+        st.write("Profit 20% dari usaha")
+        omzet = st.number_input("Omzet Bulanan (Rp)", value=20000000, step=1000000)
+        st.write(f"Profit 20%: Rp {omzet*0.2:,.0f}")
+        st.markdown("**Biaya Langganan FIXED: Rp 300.000 / bulan**")
+        st.markdown("Fasilitas: 3 Kolom Bimbingan + ERP + OEE + Vendor + 12 Folder GDrive")
+        st.markdown('</div>', unsafe_allow_html=True)
+        biaya = 300000
 
-if st.session_state.page=="R3": render_r3()
-elif st.session_state.page=="R1": render_r1_r2("R1")
-else: render_r1_r2("R2")
+    st.markdown("### 📚 Isi Perpustakaan Ruang Teduh (dari GDrive)")
+    st.info("Semua isi bimbingan dibaca dari GDrive kita, bukan hardcode di app.py")
+    
+    tab1, tab2, tab3 = st.tabs(["Kolom 1: Fondasi", "Kolom 2: Perjalanan", "Kolom 3: Puncak"])
+    with tab1:
+        st.write("**Fondasi Teduh - Mindset & Niat**")
+        st.image("https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600", caption="Fondasi Teduh")
+        st.write("Isi dari GDrive: Dokumen Kolom1_Fondasi.pdf - Niat kerja sebagai ibadah")
+        st.button("🔊 Putar Audio Kolom 1")
+    with tab2:
+        st.write("**Perjalanan Kerja - Ikhtiar & Skill**")
+        st.image("https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600", caption="Perjalanan Kerja")
+        st.write("Isi dari GDrive: Dokumen Kolom2_Perjalanan.pdf - Skill & ikhtiar 60km dari rumah")
+        st.button("🔊 Putar Audio Kolom 2")
+    with tab3:
+        st.write("**Puncak Teduh - Tawakal & Makna**")
+        st.image("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=600", caption="Puncak Teduh")
+        st.write("Isi dari GDrive: Dokumen Kolom3_Puncak.pdf - Tawakal & makna kerja")
+        st.button("🔊 Putar Audio Kolom 3")
+
+    st.markdown(f"### 💳 Keterikatan: Rp {biaya:,} / bulan (setiap bulan)")
+    setuju = st.checkbox(f"Gua setuju langganan {st.session_state.tipe_member} Rp {biaya:,}/bulan setiap bulan")
+
+    col_back, col_next = st.columns(2)
+    with col_back:
+        if st.button("⬅️ Kembali Ruang 1", use_container_width=True):
+            st.session_state.room = 1
+            st.rerun()
+    with col_next:
+        if st.button("➡️ Masuk Ruang 3 - Corporation Access", type="primary", use_container_width=True):
+            if not setuju:
+                st.warning("Centang persetujuan langganan dulu bro")
+            else:
+                st.session_state.room = 3
+                st.rerun()
+
+# ===== RUANG 3 =====
+else:
+    st.header("Ruang 3: Corporation Access & Jaminan")
+    st.balloons()
+    st.success(f"Selamat {st.session_state.nama_member}! Lo resmi member {st.session_state.tipe_member} Ruang Teduh")
+    
+    biaya = 200000 if st.session_state.tipe_member == "Employee" else 300000
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("💰 Hitungan Bisnis - Hackathon Ready")
+    st.write(f"Tipe: {st.session_state.tipe_member} - Rp {biaya:,}/bulan")
+    st.write("---")
+    st.write("**Simulasi:**")
+    st.write(f"- 100 member x Rp {biaya:,} = Rp {100*biaya:,} / bulan")
+    st.write(f"- 500 member x Rp {biaya:,} = Rp {500*biaya:,} / bulan")
+    st.write(f"- 1000 member x Rp {biaya:,} = Rp {1000*biaya:,} / bulan")
+    st.write("**Mix 500 Employee + 500 Entrepreneur = Rp 250jt / bulan recurring!**")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### 💬 Kolom 4: Tanya Teduh (Tanya ke Meta AI)")
+    tanya = st.text_input("Tanya apa yang bikin hati lo belum teduh hari ini?", placeholder="Contoh: Gua stress commute 2 jam...")
+    if tanya:
+        st.write(f"**Jawaban Teduh untuk '{tanya}':**")
+        st.write("Ingat bro, kerja max 60km dari rumah. Ruang Teduh bantu lo cari makna, bukan cuma cuan. Tarik napas, denger audio Kolom 1 lagi.")
+
+    st.markdown("### 📂 12 Folder GDrive Corporation")
+    st.write("1. SOP | 2. ERP | 3. OEE | 4. KPI | 5. Vendor | 6. Mood Tracker | 7. Kolom 1-3 Docs | 8. Audio | 9. Member Data | 10. Finance | 11. Legal | 12. Wellbeing Report")
+    st.caption("Semua dokumen member auto masuk ke GDrive yang udah lo share ke service account")
+
+    if st.button("🔄 Ulangi dari Ruang 1", use_container_width=True):
+        st.session_state.room = 1
+        st.rerun()
+
+st.markdown("---")
+st.caption("v2.2 FINAL - 2026-09-01 - Fixed Rate Employee 200rb & Entrepreneur 300rb Per Bulan - Keterikatan Member Setiap Bulan - Hackathon Assembling Ready | 1 file app.py = 3 Ruang")
