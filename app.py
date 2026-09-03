@@ -16,6 +16,8 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = "R1"
 if "current_user" not in st.session_state:
     st.session_state.current_user = None
+if "selected_rak" not in st.session_state:
+    st.session_state.selected_rak = None
 
 NASEHAT = [
     "MINGGU 1: Teduh itu bukan menghindar, tapi mengelola. Kalau pikiran ribut, jangan dilawan, disapa.",
@@ -37,6 +39,12 @@ st.markdown("""
 .ncr-green {background:#f0f8f0; border:2.5px solid #27ae60; border-left:20px dotted #a5d6a7; padding:24px; border-radius:12px; box-shadow:5px 5px 0 #27ae60;}
 .carbon {border-top:3px dashed #888; margin:24px 0; text-align:center; color:#666; font-size:11px; letter-spacing:1.2px; background:#fff; padding:4px;}
 .org-box {border:1.5px solid #ddd; padding:12px; border-radius:10px; background:#fafafa; margin-bottom:10px;}
+.rak-detail{background:#ffffff; border:3px solid #111; border-radius:14px; padding:22px; margin-top:18px; box-shadow:6px 6px 0 #111;}
+.sop-box{background:#ffebee; border-left:6px solid #c62828; padding:12px; border-radius:8px; margin:8px 0;}
+.erp-box{background:#e3f2fd; border-left:6px solid #1565c0; padding:12px; border-radius:8px; margin:8px 0;}
+.oee-box{background:#fff8e1; border-left:6px solid #f9a825; padding:12px; border-radius:8px; margin:8px 0;}
+.kpi-box{background:#f3e5f5; border-left:6px solid #7b1fa2; padding:12px; border-radius:8px; margin:8px 0;}
+.alk-box{background:#e8f5e9; border-left:6px solid #2e7d32; padding:14px; border-radius:10px; margin:8px 0; font-style:italic;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -55,7 +63,7 @@ with c3:
     if st.button("🟢 HIJAU - STORAGE 5 RAK", use_container_width=True, type="primary" if st.session_state.current_page=="R3" else "secondary"):
         st.session_state.current_page="R3"; st.rerun()
 
-st.markdown('<div class="carbon">✂️ CARBON COPY - PUTIH (ASLI) -> MERAH (TEMBUSAN 1) -> HIJAU (TEMBUSAN 2) - GARIS PUTUS-PUTUS</div>', unsafe_allow_html=True)
+st.markdown('<div class="carbon">✂ CARBON COPY - PUTIH (ASLI) -> MERAH (TEMBUSAN 1) -> HIJAU (TEMBUSAN 2) - GARIS PUTUS-PUTUS</div>', unsafe_allow_html=True)
 
 # ================= R1 PUTIH =================
 if st.session_state.current_page=="R1":
@@ -91,7 +99,6 @@ if st.session_state.current_page=="R1":
         st.markdown("#### 📝 FORM REGISTRASI LENGKAP - SESUAI STRUKTUR PERUSAHAAN")
         st.caption("Wajib: Nama, Tempat & Tgl Lahir, Pengalaman, Pendidikan, Zona Rumah Tinggal, Email, No Telepon - Standar HRD")
         
-        # FIX BUG: HANYA form_submit_button DI DALAM FORM
         with st.form("form_org_final", clear_on_submit=False):
             st.markdown("**A. DATA PRIBADI LENGKAP**")
             nama = st.text_input("Nama Lengkap *", placeholder="Budi Santoso")
@@ -197,107 +204,137 @@ elif st.session_state.current_page=="R2":
                         tts.write_to_fp(fp)
                         fp.seek(0)
                         st.audio(fp, format='audio/mp3')
-                        st.success("Audio Teduh diputar - sesuai saran lu: text jadi suara speaker")
+                        st.success("Audio Teduh diputar")
                     except Exception as e:
-                        st.warning(f"gTTS error: {e} - pakai browser TTS fallback")
+                        st.warning(f"gTTS error: {e}")
             with col_b:
                 if st.button("📜 Ganti Nasehat"):
                     st.rerun()
 
         st.markdown("---")
         st.markdown("### 💼 BURSA KERJA TEDUH - SESUAI STRUKTUR ORGANISASI")
-        st.markdown("**Employee (Staff-Supervisor) = Pencari Kesempatan | Entrepreneur (Manager-Business Owner) = Pemberi Kesempatan - Data lengkap (nama, TTL, pengalaman, pendidikan, zona, email, HP) terkirim otomatis saat melamar**")
-        
-        tab_cari, tab_post, tab_member = st.tabs(["🔍 Cari Loker (Sesuai Zona & Jabatan)", "➕ Posting Loker (Wewenang Pimpinan)", "🏢 Org Chart Member"])
-        
+        tab_cari, tab_post, tab_member = st.tabs(["🔍 Cari Loker", "➕ Posting Loker", "🏢 Org Chart"])
         with tab_cari:
-            st.caption(f"Login sebagai {m['jabatan']} - {'Bisa melamar, data org lengkap lu akan terkirim' if m['main_role']=='employee' else 'Kamu pimpinan, wewenang posting bukan melamar'}")
             for loker in st.session_state.bursa_kerja:
                 with st.container(border=True):
                     c1,c2 = st.columns([3,1])
                     with c1:
-                        st.markdown(f"**{loker['role_needed']}** - Level: {loker['level']} - Zona: {loker['zona']}")
-                        st.caption(f"by {loker['posted_by']} | {loker['deskripsi']} | {loker['tarif']}")
+                        st.markdown(f"**{loker['role_needed']}** - {loker['level']} - {loker['zona']}")
+                        st.caption(f"by {loker['posted_by']} | {loker['deskripsi']}")
                     with c2:
                         if m['main_role']=='employee':
-                            if st.button(f"Lamar #{loker['id']}", key=f"lamar_{loker['id']}_v3"):
+                            if st.button(f"Lamar #{loker['id']}", key=f"lamar_{loker['id']}"):
                                 m['ikatan_score']+=10
-                                st.success(f"✅ Lamaran terkirim!\n{m['nama']} ({m['jabatan']}, {m['zona']}, {m['pendidikan']}, Exp {m['tahun_pengalaman']}th) -> {loker['posted_by']}. Ikatan +10")
+                                st.success(f"Lamaran terkirim! {m['nama']} -> {loker['posted_by']}. Ikatan +10")
                         else:
-                            st.button("Pimpinan tidak melamar", disabled=True, key=f"dis_{loker['id']}_v3")
+                            st.button("Pimpinan tidak melamar", disabled=True, key=f"dis_{loker['id']}")
 
         with tab_post:
             if m['main_role']!='entrepreneur':
-                st.error(f"❌ Wewenang ditolak: {m['jabatan']} (Employee) tidak bisa posting. Hanya Manager s/d Business Owner (Entrepreneur) yang punya wewenang posting loker.")
+                st.error(f"❌ Wewenang ditolak: {m['jabatan']} Employee tidak bisa posting.")
             else:
-                st.markdown(f"**Form Posting - Wewenang {m['jabatan']}**")
                 with st.form("post_loker_final"):
-                    judul = st.text_input("Jabatan yang dicari", placeholder="Staff Admin, Senior Barista, Supervisor Toko")
+                    judul = st.text_input("Jabatan yang dicari")
                     level_butuh = st.selectbox("Level dibutuhkan", ["Staff","Senior Staff","Supervisor"])
                     zona_loker = st.selectbox("Zona Penempatan", ["Jakarta Pusat","Jakarta Utara","Jakarta Barat","Jakarta Timur","Jakarta Selatan","Bogor","Depok","Tangerang","Bekasi"])
-                    desk = st.text_area("Deskripsi tugas, jam kerja, wewenang")
-                    tarif_l = st.text_input("Gaji/Tarif", placeholder="1.5jt/bulan")
-                    submit_loker = st.form_submit_button("📢 Posting Loker - Tembus ke Semua Employee")
+                    desk = st.text_area("Deskripsi tugas")
+                    tarif_l = st.text_input("Gaji/Tarif")
+                    submit_loker = st.form_submit_button("📢 Posting Loker")
                     if submit_loker:
                         st.session_state.bursa_kerja.append({"id":len(st.session_state.bursa_kerja)+1,"posted_by":f"{m['nama']} - {m['jabatan']}","posted_email":m['email'],"role_needed":judul,"level":level_butuh,"zona":zona_loker,"deskripsi":desk,"tarif":tarif_l})
-                        m['ikatan_score']+=5
-                        st.success(f"Loker {judul} ({level_butuh}) Zona {zona_loker} terposting! Semua Employee Staff-Supervisor bisa melamar dengan data lengkap org mereka.")
+                        st.success(f"Loker {judul} terposting!")
 
         with tab_member:
-            st.markdown("**Daftar Member - Satu Struktur Organisasi Perusahaan**")
             for email, data in st.session_state.member_db.items():
-                st.markdown(f"- **{data['nama']}** | {data['jabatan']} ({data['main_role']}) | TTL: {data['tempat_lahir']}, {data['tgl_lahir']} | {data['zona']} | {data['pendidikan']} | Exp {data['tahun_pengalaman']}th | {data['email']} | {data['no_hp']}")
+                st.markdown(f"- **{data['nama']}** | {data['jabatan']} | {data['zona']} | {data['pendidikan']} | Exp {data['tahun_pengalaman']}th")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ================= R3 HIJAU =================
+# ================= R3 HIJAU - FIX RAK 1 ETIS KLIK DETAIL =================
 else:
     st.markdown('<div class="ncr-green">', unsafe_allow_html=True)
-    st.subheader("LEMBAR 3 HIJAU - TEMBUSAN 2 | BOARDING / STORAGE - 5 Rak System + QRIS VA")
-    st.markdown("**Flow: [QRIS VA] -> [INVOICE] -> [FULL ACCESS] -> [STORAGE 5 RAK]**")
+    st.subheader("LEMBAR 3 HIJAU - TEMBUSAN 2 | BOARDING / STORAGE - 5 RAK SYSTEM + QRIS VA")
+    st.markdown("**Flow: [QRIS VA] -> [INVOICE] -> [FULL ACCESS] -> [STORAGE 5 RAK] - KLIK TIAP RAK UNTUK LEMBARAN**")
     if st.session_state.current_user:
         m = st.session_state.member_db[st.session_state.current_user]
         c1,c2 = st.columns(2)
         with c1:
             st.metric("QRIS VA", f"VA-{m['nama'][:4].upper()}-{m['zona'][:3].upper()}-TEDUH")
-            st.code(f"Tagihan: Rp{m['tarif']} - {m['jabatan']} - {m['main_role']}")
+            st.code(f"Tagihan: Rp{m['tarif']} - {m['jabatan']}")
         with c2:
             st.metric("INVOICE", f"INV/{m['jabatan']}/{datetime.now().strftime('%m%y')}")
-            st.success(f"LUNAS - Akses: {m['wewenang'][:60]}...")
+            st.success(f"LUNAS - Akses: {m['jabatan']}")
     else:
-        st.info("Daftar di R1 Putih untuk dapat VA & Invoice sesuai jabatan")
+        st.info("Daftar di R1 Putih untuk dapat VA & Invoice")
 
-    st.markdown("#### 📦 5 RAK SYSTEM - Gudang Aturan Tersystematis")
+    st.markdown("#### 📦 5 RAK SYSTEM - Gudang Aturan Tersystematis - KLIK UNTUK BACA LEMBARAN")
     r1,r2,r3,r4,r5 = st.columns(5)
     with r1:
         with st.container(border=True):
             st.markdown("**RAK 1: SOP Kebersihan**")
-            st.checkbox("Sapu pagi 07:00", value=True, key="sop_v3_1")
-            st.checkbox("Pel siang 12:00", key="sop_v3_2")
-            st.caption("Wajib Employee: Staff-Supervisor. Pimpinan cek.")
+            st.markdown("*(Obedience)*")
+            st.caption("Disiplin, Bersih, Rajin, Ramah")
+            if st.button("📖 Buka SOP", key="open_r1_final", use_container_width=True, type="primary"):
+                st.session_state.selected_rak = 1
     with r2:
         with st.container(border=True):
             st.markdown("**RAK 2: ERP Jam 9**")
             st.metric("Check-in", "09:00 WIB")
-            st.caption("Semua jenjang wajib. Supervisor & Manager monitoring.")
+            st.caption("Semua jenjang wajib")
+            if st.button("📖 Buka ERP", key="open_r2_final", use_container_width=True):
+                st.session_state.selected_rak = 2
     with r3:
         with st.container(border=True):
             st.markdown("**RAK 3: OEE 95%**")
             st.progress(0.95)
             st.metric("OEE", "95%")
-            st.caption("Target diri: 95% hadir utuh")
+            st.caption("Target 95% hadir utuh")
+            if st.button("📖 Buka OEE", key="open_r3_final", use_container_width=True):
+                st.session_state.selected_rak = 3
     with r4:
         with st.container(border=True):
-            st.markdown("**RAK 4: KPI Performance**")
-            st.write("Employee: Apply + Kehadiran + SOP")
-            st.write("Entrepreneur: Posting + Approve + Retensi")
-            st.caption("Sesuai wewenang jabatan")
+            st.markdown("**RAK 4: KPI**")
+            st.write("Employee: Apply+SOP")
+            st.write("Entrepreneur: Posting+Approve")
+            st.caption("Sesuai wewenang")
+            if st.button("📖 Buka KPI", key="open_r4_final", use_container_width=True):
+                st.session_state.selected_rak = 4
     with r5:
         with st.container(border=True):
-            st.markdown("**RAK 5: ALKITAB Fondasi**")
-            st.caption("Teduh, Terikat, Tumbuh. Co-growing, bukan co-working. Fondasi semua jabatan.")
+            st.markdown("**RAK 5: ALKITAB**")
+            st.caption("Teduh, Terikat, Tumbuh")
+            if st.button("📖 Buka ALKITAB", key="open_r5_final", use_container_width=True):
+                st.session_state.selected_rak = 5
+
+    # DETAIL LEMBARAN SAAT KLIK - INI FIX ETIS RAK 1
+    if st.session_state.selected_rak:
+        st.markdown('<div class="rak-detail">', unsafe_allow_html=True)
+        if st.session_state.selected_rak == 1:
+            st.markdown("## 📜 RAK 1: SOP - Standard Operational Procedure (Obedience)")
+            st.markdown("**SOP = Disiplin, Bersih, Rajin, Ramah - Wajib Employee Staff s/d Supervisor**")
+            st.markdown('<div class="sop-box"><b>1. DISIPLIN (Obedience - Wajib datang 5 menit sebelum jam kerja):</b><br>Jam kerja 09:00, wajib datang 08:55. Check-in ERP tepat waktu. Telat 5 menit = pembinaan. Disiplin adalah ketaatan.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sop-box"><b>2. BERSIH (Pakaian rapih bersih, kenakan sepatu dan sopan):</b><br>Pakaian rapih, bersih, wangi. Wajib kenakan sepatu (bukan sandal), kaos kaki bersih. Rambut rapih, kuku bersih. Sopan senyum sapa salam ke pelanggan & tim.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sop-box"><b>3. RAJIN (Kerja rajin sampai tutup toko):</b><br>Kerja rajin fokus tidak main HP jam 09:00-18:00. Sapu pagi 07:00, pel siang 12:00, bereskan meja, cek 15 poin kebersihan, matikan AC/lampu, kunci laci. Pulang setelah toko rapi & Supervisor approve.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sop-box"><b>4. RAMAH (Obedience):</b><br>Ramah ke pelanggan "Selamat datang di Ruang Teduh", ramah ke tim tolong-menolong. Ruang kotor = rezeki seret. SOP adalah cermin hati.</div>', unsafe_allow_html=True)
+            st.success("✅ Fix etis: SOP bukan cuma Sapu/Pel checklist, tapi pembentukan karakter Disiplin, Bersih, Rajin, Ramah (Obedience)")
+        elif st.session_state.selected_rak == 2:
+            st.markdown("## 📘 RAK 2: ERP - Enterprise Resource Planning")
+            st.markdown('<div class="erp-box"><b>ERP adalah bisnis utama perusahaan</b> - sistem kelola terintegrasi: kehadiran, tugas, bursa kerja, invoice dalam 1 aplikasi. Di Ruang Teduh: Jam 9 System, semua jenjang wajib scan QR Gate & check-in 09:00 WIB via aplikasi. ERP jadi bukti kerja, link ke OEE & KPI.</div>', unsafe_allow_html=True)
+        elif st.session_state.selected_rak == 3:
+            st.markdown("## 📙 RAK 3: OEE 95%")
+            st.markdown('<div class="oee-box"><b>OEE = Availability 100% x Performance 95% x Quality 95% = 95% hadir utuh.</b> Jangan bolos, fokus jangan main HP, cek ulang kerjaan.</div>', unsafe_allow_html=True)
+        elif st.session_state.selected_rak == 4:
+            st.markdown("## 📕 RAK 4: KPI Performance")
+            st.markdown('<div class="kpi-box"><b>Employee:</b> Kehadiran 30%, SOP 25%, OEE 25%, Bursa 10%, Attitude 10%. <b>Entrepreneur:</b> Posting+Approve 30%, Retensi 25%, OEE Tim 25%, Growth 20%. KPI <80% coaching, >90% bonus & naik jabatan.</div>', unsafe_allow_html=True)
+        else:
+            st.markdown("## 📗 RAK 5: ALKITAB Fondasi")
+            st.markdown('<div class="alk-box"><b>Teduh, Terikat, Tumbuh. Co-growing bukan co-working.</b><br>1 Kor 14:40 Sopan & teratur, Kol 3:23 Kerja seperti untuk Tuhan, Mat 25:21 Setia perkara kecil, Maz 1:2-3 Renungkan Taurat.<br>Renungan pagi 07:30 sebelum SOP.</div>', unsafe_allow_html=True)
+        if st.button("❌ Tutup Lembaran", key="close_final"):
+            st.session_state.selected_rak = None
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="carbon">FLOWCHART THREE WAY SEMPURNA - PUTIH (Form Org Lengkap) --carbon--> MERAH (Bursa Sesuai Jenjang & Zona) --carbon--> HIJAU (VA + 5 Rak Sesuai Wewenang) - Floating Dot Orange Navigasi</div>', unsafe_allow_html=True)
-st.caption("Ruang Teduh AI v3.0 - Struktur Organisasi Perusahaan - Siap Assembly Hackathon - Tersystematis")
+st.markdown('<div class="carbon">FLOWCHART THREE WAY SEMPURNA - PUTIH (Form Org Lengkap) --carbon--> MERAH (Bursa Sesuai Jenjang & Zona) --carbon--> HIJAU (VA + 5 Rak Sesuai Wewenang) - KLIK RAK 1 SOP OBEDIENCE FIX ETIS</div>', unsafe_allow_html=True)
+st.caption("Ruang Teduh AI v3.1 - Fix RAK 1 Etis - Tersystematis - Siap Assembly")
