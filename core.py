@@ -1,104 +1,136 @@
 """
-core.py - OTAK Ruang Teduh | LEMBAR MERAH - TEMBUSAN 1
-Three Way NCR - Buku 1 Ruang 3 Lembar
-Sesuai struktur organisasi perusahaan real
+core.py - Otak Ruang Teduh AI - Three Way NCR + Billboard Bursa + Volume Grafik
+Update: Support kolom syarat lengkap + Ruach Hakadosh bimbingan
 """
-from datetime import datetime, date
-import io
 
-class RuangTeduhCore:
-    def __init__(self):
-        self.nasehat_path = "nasehat_mingguan.txt"
-        self.member_db = {}  # email -> full org data
-        self.bursa_kerja = [
-            {"id":1, "posted_by":"Budi - Director", "posted_email":"budi@teduh.id", "role_needed":"Supervisor Kebersihan", "level":"Supervisor", "zona":"Jakarta Selatan", "deskripsi":"Lead tim SOP jam 7-9 pagi, cek kebersihan", "tarif":"2.5jt/bulan"},
-            {"id":2, "posted_by":"Sari - Business Owner", "posted_email":"sari@teduh.id", "role_needed":"Staff Barista", "level":"Staff", "zona":"Jakarta Pusat", "deskripsi":"Jam 9-17, handle ERP", "tarif":"1.5jt/bulan"},
-        ]
+import json
+import os
+from dataclasses import dataclass, asdict
+from typing import List, Dict
+from datetime import datetime
 
-    def load_nasehat(self):
-        try:
-            with open(self.nasehat_path, "r", encoding="utf-8") as f:
-                return [l.strip() for l in f if l.strip()]
-        except:
-            return [
-                "Teduh itu bukan menghindar, tapi mengelola.",
-                "Employee setia = konsisten jam 9 pagi.",
-                "Entrepreneur 50rb = ikatan, bukan biaya."
-            ]
+TARIF = {
+    "EMPLOYEE": 55000,
+    "ENTREPRENEUR": 75000
+}
 
-    def get_nasehat_mingguan(self):
-        all_n = self.load_nasehat()
-        week = datetime.now().isocalendar()[1]
-        return all_n[week % len(all_n)]
+ROLE_JABATAN = {
+    "EMPLOYEE": ["Staff", "Senior Staff", "Supervisor"],
+    "ENTREPRENEUR": ["Manager", "GM", "Director", "Business Owner", "Owner Kecil / Pengusaha"]
+}
 
-    def tts_payload(self, text):
-        """Payload untuk gTTS / Web Speech API - saran lu: nasehat bisa dibacakan speaker"""
-        try:
-            from gtts import gTTS
-            tts = gTTS(text=text, lang='id', slow=False)
-            fp = io.BytesIO()
-            tts.write_to_fp(fp)
-            fp.seek(0)
-            return fp
-        except:
-            return {"text": text, "voice": "id-ID", "speed": 0.9}
+ZONA_LIST = [
+    "Jakarta Pusat", "Jakarta Utara", "Jakarta Barat", "Jakarta Timur",
+    "Jakarta Selatan", "Bogor", "Depok", "Tangerang", "Bekasi"
+]
 
-    # === REGISTRASI ORG LENGKAP - SESUAI PERMINTAAN LU TERBARU ===
-    def register_org(self, data: dict):
-        """
-        data wajib: nama, tempat_lahir, tgl_lahir, email, no_hp, zona, pendidikan, jurusan, tahun_pengalaman, pengalaman_detail, main_role, jabatan
-        main_role: employee (Staff s/d Supervisor) | entrepreneur (Manager s/d Business Owner)
-        """
-        email = data["email"]
-        tarif = 30000 if data["main_role"] == "employee" else 50000
-        
-        # Wewenang sesuai jenjang
-        if data["main_role"] == "employee":
-            wewenang = f"{data['jabatan']} (Employee) - Wewenang: Melamar loker, akses chat, SOP Kebersihan, ERP Jam 9. Level {data['jabatan']} tidak bisa posting loker."
-        else:
-            wewenang = f"{data['jabatan']} (Entrepreneur) - Wewenang: Posting loker, approve lamaran {data['jabatan']} ke bawah, kelola KPI/OEE, Full 5 Rak SOP/ERP/OEE/KPI/ALKITAB, QRIS VA + Invoice."
+PENDIDIKAN_LIST = ["SMA/SMK", "D3", "S1", "S2", "S3"]
 
-        self.member_db[email] = {
-            **data,
-            "tarif": tarif,
-            "wewenang": wewenang,
-            "ikatan_score": 0,
-            "joined": datetime.now().isoformat(),
-            "status": "VALIDASI - TEMBUS 3 LEMBAR"
-        }
-        return self.member_db[email]
+# Field wajib sesuai point 3 lembar 2 merah pink + tambahan sistematis
+FIELD_WAJIB = [
+    "Nama Lengkap",
+    "Tempat & Tanggal Lahir",
+    "Alamat Email",
+    "Nomor HP/WA",
+    "Alamat Kependudukan (KTP/Domisili)",
+    "Zona Rumah Tinggal",
+    "Pendidikan Terakhir + Jurusan",
+    "Tahun Pengalaman (0-20th)",
+    "Deskripsi Pengalaman Kerja Lengkap",
+    "Skill Utama (3 skill)",
+    "Kategori (Employee / Entrepreneur)",
+    "Jabatan Sesuai Struktur ERP",
+    "Foto Profil (opsional)",
+    "CV/Portofolio Link (opsional)",
+    "Akun LinkedIn / Sosmed (opsional)"
+]
 
-    def post_loker(self, entrepreneur_email, judul, level_butuh, zona, desk, tarif_loker):
-        member = self.member_db.get(entrepreneur_email)
-        if not member or member["main_role"] != "entrepreneur":
-            return False, "Hanya Entrepreneur (Manager s/d Business Owner) yang bisa posting loker - sesuai wewenang pimpinan"
-        loker = {
-            "id": len(self.bursa_kerja)+1,
-            "posted_by": f"{member['nama']} - {member['jabatan']}",
-            "posted_email": entrepreneur_email,
-            "role_needed": judul,
-            "level": level_butuh,
-            "zona": zona,
-            "deskripsi": desk,
-            "tarif": tarif_loker,
-            "created": datetime.now().isoformat()
-        }
-        self.bursa_kerja.append(loker)
-        member["ikatan_score"] += 5
-        return True, loker
+DATA_FILE = "data_member.json"
 
-    def apply_loker(self, employee_email, loker_id):
-        member = self.member_db.get(employee_email)
-        if not member or member["main_role"] != "employee":
-            return False, "Hanya Employee (Staff s/d Supervisor) yang bisa melamar - sesuai struktur org"
-        member["ikatan_score"] += 10
-        return True, f"{member['nama']} ({member['jabatan']}) berhasil melamar loker #{loker_id}. Ikatan +10. Data lengkap (nama, TTL, pendidikan, zona, pengalaman) terkirim ke entrepreneur."
+@dataclass
+class Member:
+    nama: str
+    tempat_lahir: str
+    tgl_lahir: str
+    email: str
+    hp: str
+    alamat_kependudukan: str
+    zona: str
+    pendidikan: str
+    jurusan: str
+    tahun_pengalaman: int
+    deskripsi_pengalaman: str
+    skill: str
+    kategori: str
+    jabatan: str
+    tarif: int
+    tgl_daftar: str
+    ikatan_score: int = 10
+    foto: str = ""
+    cv_link: str = ""
 
-    def get_org_chart(self):
-        """Return org chart untuk README & flowchart"""
-        return {
-            "EMPLOYEE_30K": ["Staff", "Senior Staff", "Supervisor"],
-            "ENTREPRENEUR_50K": ["Manager", "General Manager", "Director", "Business Owner - Pimpinan Utama"]
-        }
+    def to_dict(self):
+        return asdict(self)
 
-core = RuangTeduhCore()
+def load_members() -> List[Dict]:
+    if not os.path.exists(DATA_FILE):
+        return []
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
+
+def save_member(member: Member):
+    members = load_members()
+    members.append(member.to_dict())
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(members, f, indent=2, ensure_ascii=False)
+    return members
+
+def get_bursa_billboard():
+    members = load_members()
+    return sorted(members, key=lambda x: x.get("tgl_daftar", ""), reverse=True)
+
+def get_bursa_stats():
+    members = load_members()
+    total = len(members)
+    employee = len([m for m in members if m.get("kategori") == "EMPLOYEE"])
+    entrepreneur = len([m for m in members if m.get("kategori") == "ENTREPRENEUR"])
+    # 1 member = 1 arsip = 1 vote
+    total_vote = total
+    return {
+        "total": total,
+        "employee": employee,
+        "entrepreneur": entrepreneur,
+        "total_vote": total_vote,
+        "volume_grafik": {"Employee": employee, "Entrepreneur": entrepreneur}
+    }
+
+def get_5_rak_storage():
+    return {
+        "RAK 1 - SOP Kebersihan & Obedience": "SOP Obedience - Latihan kesetiaan pada hal kecil. Checklist kebersihan area kerja harian, wajib untuk Staff-Supervisor, dicek Pimpinan. Taat = dipercaya hal besar.",
+        "RAK 2 - ERP Jam 9": "ERP - Enterprise Resource Planning versi manusia. Check-in 09:00 WIB wajib semua jenjang. Supervisor & Manager monitoring. ERP mengikat pengusaha, owner kecil, sampai Business Owner dalam satu struktur.",
+        "RAK 3 - OEE 95%": "Overall Equipment Effectiveness versi manusia: Availability 100% (Hadir utuh), Performance 95% (Kerja optimal), Quality 95% (Hasil bermutu). Target diri 95% hadir utuh, bukan 100% sempurna.",
+        "RAK 4 - KPI Performance": "Employee KPI: Jumlah apply loker, kehadiran, SOP. Entrepreneur KPI: Jumlah posting loker, approve lamaran, retensi employee. Semua terukur di bursa.",
+        "RAK 5 - ALKITAB & Ruach Hakadosh": "Fondasi Teduh, Terikat, Tumbuh. Bukan sekadar co-working, tapi co-growing. Bimbingan Ruach Hakadosh - Roh Kudus yang menuntun dalam pekerjaan, bukan hanya teori."
+    }
+
+def get_bimbingan_ai_response(pertanyaan: str, member_kategori: str = "EMPLOYEE"):
+    """Lembar 3 Hijau - Storage sebagai AI Mentor Ruach Hakadosh"""
+    q = pertanyaan.lower()
+    # Template bimbingan 1-2 kalimat + SOP/ERP/OEE/KPI/Alkitab
+    if "sudah bayar" in q or "terikat" in q or "bimbang" in q:
+        return "Tetap teduh dulu, keterikatanmu di bursa adalah bukti komitmen. SOP ingatkan: setia hal kecil, ERP ingatkan: jam 9 tepat adalah hormat. (Pengkhotbah 9:10)"
+    if "kerja" in q or "lamar" in q:
+        return "Bursa mencatat 1 arsip = 1 vote = 1 kesempatan. Employee melamar, Entrepreneur membuka pintu. Terus apply, skor ikatan naik, Ruach Hakadosh buka jalan. (Kolose 3:23)"
+    if "sop" in q:
+        return "SOP bukan beban, tapi pagar yang menjaga mutu. Bersihkan areamu hari ini, maka besok kepercayaan ditambahkan."
+    if "erp" in q:
+        return "ERP adalah keteraturan ilahi dalam organisasi. Owner kecil sampai Business Owner semua terikat dalam struktur yang sama. Check-in 09:00 adalah ibadah tepat waktu."
+    if "oee" in q:
+        return "OEE 95% - Jangan kejar 100% sempurna, kejar 95% konsisten hadir utuh. Availability 100%, Performance 95%, Quality 95%."
+    if "kpi" in q:
+        return "KPI bukan untuk menghakimi, tapi untuk melihat pertumbuhan. 1 lamaran = 1 benih. Tabur terus, tuai akan datang."
+    # Default bimbingan ajakan
+    return "Di Ruang Teduh, kita tidak jalan sendiri. Teduh dulu, terikat dalam bursa, lalu tumbuh bersama. SOP, ERP, OEE, KPI dan Alkitab menuntunmu. Tanyakan lagi, aku di sini sebagai storage bimbinganmu."
