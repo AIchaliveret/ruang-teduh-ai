@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import qrcode, io, hashlib, uuid, time, requests
 
-st.set_page_config(page_title="Ruang Teduh V6.5 Voice - AssemblyAI - aichaliveret", layout="wide", page_icon="🎙️")
+st.set_page_config(page_title="Ruang Teduh V6.6 Voice - AssemblyAI - aichaliveret", layout="wide", page_icon="🎙️")
 
 OWNER_NAME = "aichaliveret"
 OWNER_HP = "081291904422"
@@ -149,7 +149,7 @@ with top2:
                 st.session_state.authenticated=True; st.session_state.role="Judge"; st.session_state.show_dev=True; st.rerun()
 
 if mode == "commercial":
-    st.markdown(f"""<div class="hero"><h1>🎙️ Ruang Teduh V6.5 Voice Agent + 3 Lembar + QRIS</h1><p><span class='badge-voice'>AssemblyAI $10k</span> Owner: <b>{OWNER_NAME}</b> | Daftar pakai suara! Tanya komisi pakai suara! <b>Rp55k→40k & Rp75k→55k TITIK!</b> | <span class='badge-demo'>DEMO VOICE + QRIS</span></p></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="hero"><h1>🎙️ Ruang Teduh V6.6 Voice Agent + 3 Lembar + QRIS</h1><p><span class='badge-voice'>AssemblyAI $10k</span> Owner: <b>{OWNER_NAME}</b> | Daftar pakai suara! Tanya komisi pakai suara! <b>Rp55k→40k & Rp75k→55k TITIK!</b> | <span class='badge-demo'>DEMO VOICE + QRIS</span></p></div>""", unsafe_allow_html=True)
     st.write("")
     c1,c2,c3,c4 = st.columns(4)
     with c1: st.markdown('<div class="value-card"><span class="badge-voice">VOICE REGIST</span><h3>Daftar Pakai Suara</h3>Bilang "Daftar Entrepreneur nama Budi" → AssemblyAI → auto isi!</div>', unsafe_allow_html=True)
@@ -158,7 +158,7 @@ if mode == "commercial":
     with c4: st.markdown('<div class="value-card"><span class="badge-voice">VOICE BOT</span><h3>Tanya Komisi</h3>"Berapa komisi L1 gua?" → Bot jawab!</div>', unsafe_allow_html=True)
     st.write("")
 else:
-    st.markdown(f"## 🎙️ Ruang Teduh V6.5 Voice - AssemblyAI - Owner {OWNER_NAME} - Mode Juri")
+    st.markdown(f"## 🎙️ Ruang Teduh V6.6 Voice - AssemblyAI - Owner {OWNER_NAME} - Mode Juri")
     st.success("🎙️ AssemblyAI Voice Agent - Voice Registration + Voice Bot Ready!")
 
 members_names = " | ".join([f"{m['nama'].upper()} [{m['role']}]" for m in st.session_state.members])
@@ -212,7 +212,7 @@ with col_v1:
                     st.balloons()
 
 with col_v2:
-    st.markdown("#### 🤖 Voice Bot Keuangan")
+    st.markdown("#### 🤖 Voice Bot Keuangan", unsafe_allow_html=False)
     st.code('"Berapa total komisi L1 gua hari ini?"', language="text")
     audio_q = st.audio_input("🎙️ Tanya via suara", key="audio_q")
     text_q = st.text_input("Atau ketik pertanyaan:", placeholder="Berapa komisi L1 gua?", key="text_q")
@@ -234,7 +234,7 @@ with col_v2:
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<div class="ncr-card ncr-putih">', unsafe_allow_html=True)
-st.markdown(f"### LEMBAR 1 - Manual + Voice + QRIS <span class='badge-demo'>DEMO</span>")
+st.markdown(f"### LEMBAR 1 - Manual + Voice + QRIS :orange[DEMO]")
 col_form, col_qris = st.columns([2,1])
 with col_form:
     with st.form("form_qris_voice"):
@@ -245,7 +245,7 @@ with col_form:
             hp = st.text_input("HP/WA *", key="m_hp")
             role = st.selectbox("Kategori *", ["Employee - Rp55.000 (Netto 40k)", "Entrepreneur - Rp75.000 (Netto 55k)"], key="m_role")
         with f2:
-            zona = st.selectbox("Zona", ["Jakarta Selatan","Bekasi","Tangerang","Bandung","Surabaya","Lainnya"], key="m_zona")
+            zona = st.selectbox("Zona", ["DKI Jakarta - Jakarta Selatan","DKI Jakarta - Jakarta Barat","DKI Jakarta - Jakarta Timur","DKI Jakarta - Jakarta Pusat","DKI Jakarta - Jakarta Utara","DKI Jakarta (All)","Bekasi","Tangerang","Bandung","Surabaya","Lainnya"], key="m_zona")
             skill = st.text_input("Skill Utama *", placeholder="ERP Jam 9", key="m_skill")
             kode_referral = st.text_input("Kode Referral", value=query_ref if query_ref!=OWNER_REF else "", key="m_ref")
             metode = st.selectbox("Gateway", [f"Manual GoPay/DANA/OVO {OWNER_HP} (Demo jalan!)", f"Xendit QRIS Demo (Real minggu depan)", "Midtrans QRIS Demo"], key="m_metode")
@@ -264,7 +264,7 @@ with col_form:
                 st.rerun()
 
 with col_qris:
-    st.markdown("#### 💳 QRIS <span class='badge-demo'>DEMO</span>")
+    st.markdown("#### 💳 QRIS :orange[DEMO]")
     if st.session_state.pending_order and st.session_state.payment_status == "PENDING_QRIS":
         order = st.session_state.pending_order
         st.markdown('<div class="qris-box">', unsafe_allow_html=True)
@@ -298,4 +298,5 @@ st.markdown('<div class="ncr-card ncr-hijau">', unsafe_allow_html=True)
 st.markdown("### LEMBAR 3 - 5 Rak System + Voice")
 st.success(f"Auto Nasehat {datetime.now().strftime('%A')}: SOP | ERP | OEE | KPI | Amsal 16:3")
 st.markdown('</div>', unsafe_allow_html=True)
-st.caption(f"V6.5 Voice Agent AssemblyAI - Owner {OWNER_NAME} - Voice Registration + Voice Bot - Clean for GitHub - Secrets ASSEMBLYAI_API_KEY - Link ?mode=judge&judge=assemblyai&pass=KOMITMEN&dev=1 - $10k Hackathon lablab.ai")
+st.caption(f"V6.6 Voice Agent AssemblyAI - Owner {OWNER_NAME} - Voice Registration + Voice Bot - Clean for GitHub - Secrets ASSEMBLYAI_API_KEY - Link ?mode=judge&judge=assemblyai&pass=KOMITMEN&dev=1 - $10k Hackathon lablab.ai - Zona DKI Lengkap - Login 1x KOMITMEN tanpa OTP")
+st.info("🔐 Login: Pakai ?pass=KOMITMEN di URL = auto-login Judge 1x tanpa OTP, session tetap login tanpa logout sampai browser ditutup. Owner login KOMITMEN juga.")
