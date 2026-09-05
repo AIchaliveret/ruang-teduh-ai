@@ -99,18 +99,7 @@ def speak_text(text):
     components.html(js_code, height=0)
 
 
-def speak_text(text):
-    # Simple wrapper as user requested example - but with improved anti-echo
-    js_code = f"""
-    <script>
-        speechSynthesis.cancel();
-        var msg = new SpeechSynthesisUtterance('{text[:200].replace("'", "")}');
-        msg.lang = 'id-ID';
-        msg.rate = 0.95;
-        window.speechSynthesis.speak(msg);
-    </script>
-    """
-    components.html(js_code, height=0)
+# speak_text duplicate removed - kept first one
 
 def transcribe_assemblyai(audio_bytes, api_key):
     try:
@@ -245,7 +234,14 @@ def create_loker_auto(text, creator_ref, zona, role):
     }
     return loker
 
-# Session init
+# Session init - FIX AttributeError show_dev
+if 'show_dev' not in st.session_state:
+    st.session_state.show_dev = False
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'role' not in st.session_state:
+    st.session_state.role = "Guest"
+
 if 'loker_list' not in st.session_state:
     st.session_state.loker_list = [
         {"id":"LOKER-001","title":"Sales Lapangan","role":"Employee","skill":"Sales","units_total":5,"units_remaining":5,"votes":12,"voted_by":["AICHALIVERET-OWNER"],"creator":OWNER_REF,"zona":"DKI Jakarta - Jakarta Pusat","desc":"Dibutuhkan 5 sales lapangan PT Ancol Makmur - pengalaman sales","created_at":"04 Sep 10:00","status":"🔥 Sisa 5 Kuota","applicants":[],"type":"loker"},
@@ -299,7 +295,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 assembly_key = st.secrets.get("ASSEMBLYAI_API_KEY", "demo_mode")
-if st.session_state.show_dev:
+if st.session_state.get("show_dev", False):
     st.markdown(f'<div class="hero">🚀 V6.16 RESTORED 523+ LINES NETT 67k/90k - {rupiah(PRICE_EMP)}/{rupiah(PRICE_ENT)} | TTS Instant 🔊 + Auto-Share Bursa Vote 1-Click + 5 Kuota Real-Time | Employee vs Entrepreneur | No Echo</div>', unsafe_allow_html=True)
 
 st.markdown(f"### 🚀 Ruang Teduh V6.16 RESTORED 523+ LINES NETT 67k/90k - UX Kaum Kapital - {rupiah(PRICE_EMP)}/{rupiah(PRICE_ENT)}/bulan")
@@ -356,7 +352,7 @@ with st.container():
             st.markdown("**🔊 TTS Instant - Teknologi Canggih - Minim Gesekan:**")
             tts_msg = f"Halo {parsed.get('nama')}, lowongan {parsed.get('skill')} di {parsed.get('zona')} berhasil diposting. Sisa kuota 5."
             components.html(tts_instant(tts_msg, auto_play=True), height=80)
-            components.html(tts_instant(f"{parsed.get('raw')}", button_text="🔊 Dengarkan Suara Asli Loker"), height=60)
+            components.html(tts_instant(f"{parsed.get('raw')}", button_label="🔊 Dengarkan Suara Asli Loker"), height=60)
             
             # Auto-share to Bursa frictionless - no manual 2 clicks!
             if loker_auto:
@@ -383,7 +379,7 @@ with st.container():
         st.caption("Begitu submit via suara/teks, langsung broadcast ke wall/bursa tanpa submit manual 2x")
         for feed in st.session_state.feed_wall[:3]:
             st.markdown(f'<div class="loker-card"><b>{feed["creator"]}</b>: {feed["text"][:80]}...<br><small>{feed["created_at"]} - {feed["votes"]} votes</small></div>', unsafe_allow_html=True)
-            components.html(tts_instant(feed["text"], button_text="🔊"), height=60)
+            components.html(tts_instant(feed["text"], button_label="🔊"), height=60)
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -481,7 +477,7 @@ for idx, loker in enumerate(st.session_state.loker_list):
         badge = '<span class="employee-badge">Employee</span>' if loker['role']=="Employee" else '<span class="entrepreneur-badge">Entrepreneur</span>'
         quota_badge = f'<span class="quota-green">{loker["status"]}</span>' if loker['units_remaining']>0 else f'<span class="quota-red">{loker["status"]}</span>'
         st.markdown(f'{badge} {quota_badge} **{loker["title"]}** - {loker["zona"]}<br><small>{loker["desc"]} | {loker["created_at"]} | {loker["votes"]} upvotes</small>', unsafe_allow_html=True)
-        components.html(tts_instant(f"Lowongan {loker['title']} di {loker['zona']}, {loker['status']}", button_text=f"🔊 Play Loker"), height=70)
+        components.html(tts_instant(f"Lowongan {loker['title']} di {loker['zona']}, {loker['status']}", button_label=f"🔊 Play Loker"), height=70)
     with col_l2:
         st.metric("🔥 Sisa Kuota" if loker['units_remaining']>0 else "❌ Habis", f"{loker['units_remaining']}/{loker['units_total']}")
     with col_l3:
@@ -544,4 +540,26 @@ else:
     st.info(f"🔗 Link umum: https://ruang-teduh-ai.streamlit.app/?ref={OWNER_REF} | Frictionless UX - Kaum Kapital disukai!")
 
 st.markdown('</div>', unsafe_allow_html=True)
-st.caption(f"V6.16 RESTORED 523+ LINES NETT 67k/90k TTS + BURSA AUTO VOTE + KUOTA {PRICE_EMP}/{PRICE_ENT} - Owner {OWNER_NAME} - UX Modern Kaum Kapital - Serba Instan Minim Gesekan Auto-Engaging - TTS Web Speech API + Anti-Echo + Auto-Shared Feed + Vote 1-Click + Sisa Kuota - ?mode=judge&judge=assemblyai&pass=KOMITMEN&dev=1")
+
+# === RUANG 1 PUTIH + RUANG 2 MERAH + RUANG 3 HIJAU + FINANCE + BURSA VENDOR ===
+st.markdown('<div class="ncr-card ncr-putih">', unsafe_allow_html=True)
+st.markdown("### RUANG 1 PUTIH - Purchasing Reward - Beres Kah?")
+st.markdown("**RUANG 1 PUTIH - PURCHASING YANG MEMBERIKAN REWARD - BERESKAH?**<br>Employee 95k -> Reward L1 19k + L2 9k = 28k -> Nett 67k BERES!<br>Entrepreneur 145k -> Reward L1 29k + L2 26k = 55k -> Nett 90k BERES!<br>Bursa = Vendor Supply mesti dipesan Purchasing", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="ncr-card ncr-pink">', unsafe_allow_html=True)
+st.markdown("### RUANG 2 MERAH - Procurement Kepala Gudang CS + Administrasi")
+st.markdown("**RUANG 2 MERAH - PROCUREMENT KEPALA GUDANG CS BANGET SAMA ADMINISTRASI - BERES KAH?**<br>Kepala Gudang = Bursa Loker CS via TTS, sisa kuota real-time<br>Administrasi = Finance + MGM Track, invoice QRIS + order_id tercatat<br>Bursa Vendor Supply dipesan Purchasing, BERES!", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="ncr-card ncr-hijau">', unsafe_allow_html=True)
+st.markdown("### RUANG 3 HIJAU - Storage Numpuk Indikasi + Alkitabiah")
+st.markdown("**RAK 1 SOP 40 file - numpuk = SOP belum jalan | RAK 2 ERP 55 file - numpuk = data gak sync | RAK 3 OEE | RAK 4 KPI | RAK 5 AMSAL 100 file - Amsal 16:3, 11:1, 21:5**", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="ncr-card" style="border:3px solid #0EA5E9; background:#F0F9FF;">', unsafe_allow_html=True)
+st.markdown("### LEMBAR 4 - FINANCE - Menjamin Purchasing Aman Nggak Kabur - Invoice + BAQC Diterima Vendor Dibayar")
+st.markdown(f"Finance jamin Purchasing aman, Nett {rupiah(NETT_EMP)}/{rupiah(NETT_ENT)}, Vendor dapat {rupiah(KOMISI_L1_EMP+KOMISI_L2_EMP)}/{rupiah(KOMISI_L1_ENT+KOMISI_L2_ENT)} MGM, Purchasing tanpa Finance = Bletak Benjol Wanted Tukang Parkir! BENER KAN BRO? KOMPLIT! Ruang 1 Putih Purchasing Reward Beres, Ruang 2 Merah Procurement CS Beres, Ruang 3 Hijau Storage Indikasi Alkitabiah, Finance Invoice BAQC Vendor Dibayar, Bursa Vendor Supply", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.caption(f"V6.18 CLEAN FINAL NO ERROR - RUANG 1-3 + FINANCE + BURSA VENDOR - NETT 67k/90k - Owner {OWNER_NAME} - No IndentationError")
