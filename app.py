@@ -390,8 +390,8 @@ with st.container():
 # LEMBAR 1 - QRIS + Employee vs Entrepreneur
 st.markdown('<div class="ncr-card ncr-putih">', unsafe_allow_html=True)
 st.markdown(f"### LEMBAR 1 - Langganan Bulanan {rupiah(PRICE_EMP)}/{rupiah(PRICE_ENT)} - Nett Pengelola {rupiah(NETT_EMP)}/{rupiah(NETT_ENT)} - Employee vs Entrepreneur")
-    st.markdown(f"""
-    <div class="kapital-card">
+st.markdown(f"""
+<div class="kapital-card">
     💰 <b>BUSINESS MODEL PENGELOLA:</b><br>
     Employee bayar {rupiah(PRICE_EMP)}/bulan - Potong MGM L1 {rupiah(KOMISI_L1_EMP)} + L2 {rupiah(KOMISI_L2_EMP)} = {rupiah(KOMISI_L1_EMP+KOMISI_L2_EMP)} -> <b>Nett Pengelola {rupiah(NETT_EMP)}/member (belom potong ++ gateway/server)</b><br>
     Entrepreneur bayar {rupiah(PRICE_ENT)}/bulan - Potong MGM L1 {rupiah(KOMISI_L1_ENT)} + L2 {rupiah(KOMISI_L2_ENT)} = {rupiah(KOMISI_L1_ENT+KOMISI_L2_ENT)} -> <b>Nett Pengelola {rupiah(NETT_ENT)}/member (belom potong ++)</b><br>
