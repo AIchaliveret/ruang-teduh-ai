@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import qrcode, io, hashlib, uuid, time, requests, re
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Ruang Teduh V6.16 RESTORED 523+ LINES - NETT 67k/90k - FRICTIONLESS TTS BURSA KUOTA - KAUM KAPITAL A BESAR", layout="wide", page_icon="🚀")
+st.set_page_config(page_title="Ruang Teduh V6.16 RESTORED 523+ LINES - NETT 67k/90k - FRICTIONLESS TTS BURSA KUOTA - KAUM KAPITAL", layout="wide", page_icon="🚀")
 
 OWNER_NAME = "aichaliveret"
 OWNER_HP = "081291904422"
