@@ -1,4 +1,1 @@
-streamlit
-pandas
-qrcode[pil]
-Pillow
+streamlit==1.39.0
