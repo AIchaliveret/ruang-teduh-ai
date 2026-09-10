@@ -149,7 +149,22 @@ def tts_voice_all(text, role, key_id):
         }}
     </script>
     """
-    components.html(html, height=185)
+    # Fix deprecation: st.components.v1.html will be removed after 2026-06-01 - use st.iframe with fallback
+    try:
+        # Streamlit 1.63+ has st.iframe - use it to avoid warning
+        if hasattr(st, 'iframe'):
+            # Encode html as srcdoc data uri for iframe
+            import base64
+            # Use st.components.v1.iframe with srcdoc if available, otherwise fallback
+            try:
+                st.components.v1.iframe(srcdoc=html, height=185)
+            except TypeError:
+                # Older signature - fallback to html
+                components.html(html, height=185)
+        else:
+            components.html(html, height=185)
+    except Exception:
+        components.html(html, height=185)
 
 def generate_cv_text(md):
     return f"""CV KOMPLIT - RUANG TEDUH V6.16 FINAL - {md.get('nama','')} - {md.get('jabatan','')}
