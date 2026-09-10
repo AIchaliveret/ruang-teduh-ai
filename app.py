@@ -61,7 +61,7 @@ def reduce_bursa_share(email_teman, alasan="share"):
 
 def tts_fixed(text, role, key_id):
     # FIX voice - remove quotes and escape properly
-    clean = text.replace('"','').replace("'","").replace("\n"," ").replace("\r"," ").replace("\","").strip()
+    clean = text.replace('"','').replace("'","").replace("\n"," ").replace("\r"," ").strip()
     clean = clean[:300]
     if not clean:
         clean = "Teks kosong"
