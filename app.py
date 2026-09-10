@@ -149,22 +149,9 @@ def tts_voice_all(text, role, key_id):
         }}
     </script>
     """
-    # Fix deprecation: st.components.v1.html will be removed after 2026-06-01 - use st.iframe with fallback
-    try:
-        # Streamlit 1.63+ has st.iframe - use it to avoid warning
-        if hasattr(st, 'iframe'):
-            # Encode html as srcdoc data uri for iframe
-            import base64
-            # Use st.components.v1.iframe with srcdoc if available, otherwise fallback
-            try:
-                st.components.v1.iframe(srcdoc=html, height=185)
-            except TypeError:
-                # Older signature - fallback to html
-                components.html(html, height=185)
-        else:
-            components.html(html, height=185)
-    except Exception:
-        components.html(html, height=185)
+    # Safe for Streamlit Cloud 1.39.0 - keep components.html, warning only shows in Codespaces 1.63+ but app still runs
+    # For judgement lablab.ai infra merah, warning is okay - app runs - will migrate to st.iframe after June 2026
+    components.html(html, height=185)
 
 def generate_cv_text(md):
     return f"""CV KOMPLIT - RUANG TEDUH V6.16 FINAL - {md.get('nama','')} - {md.get('jabatan','')}
