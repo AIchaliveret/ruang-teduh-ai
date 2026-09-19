@@ -1,29 +1,24 @@
 """
-RUANG TEDUH V6.16 FINAL - 523+ LINES - FINAL CV KOMPLIT + GRAFIK DI PUTIH AJA + KUNING STORAGE ROLLING 7 HARI
-================================================================================
-FINAL SESUAI PERMINTAAN BRO - GAS LANGSUNG EDIT - ISTIRAHAT JAM 4 LANJUT INFRAMERAH LABLAB.AI KOMPETISI:
-- Lembar 2 Merah Employee: Tambahkan kolom isi pengalaman dan isi alamat email whatsapp pendaftar pengguna web dan app - CV komplit
-- Lembar 3 Hijau Entrepreneur: Tambahkan CV komplit seperti lembar 2 merah lengkapi dengan alamat email whatsapp pendaftar pengguna web dan app - CV komplit mirror merah
-- Lembar 4 Kuning: Sebagai storage ruang teduh nasehat mingguan kita akan edit setiap minggu dan nasehat rolling setiap harinya - Final - Storage library aja tanpa grafik
-- Grafik: Hanya di lembar 1 putih pendaftaran - 1 aja - Hemat kuota & tenaga clerical
-- CV: Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill (di bawah pengalaman) + Alamat Email + Nomor Whatsapp = CV → asuveleikha@gmail.com
-- 523+ Lines, Nett 67K/90, Gratis Tidak Berbayar, No Pricing 95K/145K, Voice All
-================================================================================
+RUANG TEDUH V6.20 FINAL - 640+ LINES - DUAL ADMIN + 1 SENDER + VOICE ASSEMBLYAI
+- Grafik hanya di Putih - Kuning tanpa grafik - Hemat kuota
+- 1 sender_email: jugalachaliveret@gmail.com (Gmail) / Outlook Hotmail support
+- 2 admin: admin1=cinhonest@gmail.com, admin2=asuveleikha@gmail.com / asuveleikha@outlook.com
+- CV kirim ke 2 admin sekaligus via SMTP - work laptop & HP
+- Voice Agent AssemblyAI Universal-3 Pro
 """
 
 import streamlit as st
 import streamlit.components.v1 as components
+from datetime import date, datetime
+import json, os, urllib.parse, smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 try:
     import assemblyai as aai
     HAS_AAI = True
 except:
     HAS_AAI = False
-from datetime import date, datetime
-import json
-import os
-import urllib.parse
-
-st.set_page_config(page_title="Ruang Teduh V6.18 FINAL FULL + Voice Agent AssemblyAI - 604+ lines", page_icon="📗", layout="wide", initial_sidebar_state="collapsed")
 
 # SESSION - FINAL
 if "member_data" not in st.session_state:
@@ -197,7 +192,84 @@ def tts_voice_all(text, role, key_id):
     # For judgement lablab.ai infra merah, warning is okay - app runs - will migrate to st.iframe after June 2026
     components.html(html, height=185)
 
+
+def send_email_dual_admin(subject, body):
+    """KIRIM KE 2 ADMIN + 1 SENDER - FIX LAPTOP & HP - SUPPORT GMAIL & OUTLOOK/HOTMAIL"""
+    try:
+        sender_email = st.secrets["email"]["sender_email"]
+        sender_password = st.secrets["email"]["sender_password"]
+        admin1 = st.secrets["email"]["admin1"]
+        admin2 = st.secrets["email"]["admin2"]
+    except Exception as e:
+        return False, f"Secrets [email] belum lengkap: {e} - butuh sender_email, sender_password, admin1, admin2"
+
+    # Tentukan SMTP server berdasarkan sender_email
+    if "outlook.com" in sender_email or "hotmail.com" in sender_email or "live.com" in sender_email:
+        smtp_server = "smtp.office365.com"
+        smtp_port = 587
+    else:  # gmail.com
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+
+    recipients = [admin1, admin2]
+    results = []
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        
+        for to_email in recipients:
+            msg = MIMEMultipart()
+            msg['From'] = sender_email
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
+            server.sendmail(sender_email, to_email, msg.as_string())
+            results.append(to_email)
+        
+        server.quit()
+        return True, f"✅ Terkirim dari {sender_email} via {smtp_server} ke 2 admin: {', '.join(results)}"
+    except Exception as e:
+        return False, f"❌ Gagal SMTP {smtp_server}: {e} | Cek app_password Gmail 16 huruf atau password Outlook, bukan password biasa AIchaliveret&21Cin"
+
 def generate_cv_text(md):
+    return f"""CV KOMPLIT - RUANG TEDUH V6.20 FINAL DUAL ADMIN - {md.get('nama','')} - {md.get('jabatan','')}
+========================================
+Nama Lengkap: {md.get('nama','')}
+Tempat Lahir: {md.get('tempat','')}
+Tanggal Lahir: {md.get('tgl','')}
+Umur: {md.get('umur','')} tahun
+Pendidikan: {md.get('pendidikan','')}
+Pengalaman Kerja: {md.get('pengalaman','')}
+Skill: {md.get('skill','')}
+Alamat Email: {md.get('email','')} (pendaftar)
+Nomor WA: {md.get('wa','')} (pendaftar)
+Jabatan Dilamar: {md.get('jabatan','')}
+Bursa: Total {st.session_state.bursa_total} | Aktif {st.session_state.bursa_aktif} | Kerja {st.session_state.bursa_kerja}
+========================================
+CV Komplit - Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman + Skill + Email + WA = CV
+Kirim dari: {st.secrets.get('email',{}).get('sender_email','-')} ke Admin1: {st.secrets.get('email',{}).get('admin1','-')} & Admin2: {st.secrets.get('email',{}).get('admin2','-')}
+Tavo Malkhutkha - Gratis - FINAL - Grafik Hanya di Putih
+"""
+
+def generate_mailto_dual_admin(md):
+    subject = f"CV KOMPLIT - {md.get('nama','')} - {md.get('jabatan','')} - Ruang Teduh V6.20 DUAL ADMIN"
+    body = generate_cv_text(md)
+    import urllib.parse
+    subject_enc = urllib.parse.quote(subject)
+    body_enc = urllib.parse.quote(body)
+    # Mailto ke 2 admin sekaligus
+    admin1 = st.secrets.get("email",{}).get("admin1","jugalachaliveret@gmail.com")
+    admin2 = st.secrets.get("email",{}).get("admin2","asuveleikha@gmail.com")
+    return f"mailto:{admin1},{admin2}?subject={subject_enc}&body={body_enc}"
+
+
+
+def generate_cv_text_ORIG(md):
     return f"""CV KOMPLIT - RUANG TEDUH V6.16 FINAL - {md.get('nama','')} - {md.get('jabatan','')}
 ========================================
 Nama Lengkap: {md.get('nama','')}
@@ -213,7 +285,7 @@ Jabatan Dilamar: {md.get('jabatan','')}
 Bursa: Total {st.session_state.bursa_total} | Aktif {st.session_state.bursa_aktif} | Kerja {st.session_state.bursa_kerja}
 ========================================
 CV Komplit - Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + Whatsapp = CV
-Kirim ke: asuveleikha@gmail.com untuk dibantu carikan loker manual
+Kirim ke: jugalachaliveret@gmail.com untuk dibantu carikan loker manual
 Tavo Malkhutkha - Ruach Ha Kadosh - Gratis Tidak Berbayar - FINAL
 """
 
@@ -222,7 +294,7 @@ def generate_mailto_link(md):
     body = generate_cv_text(md)
     subject_enc = urllib.parse.quote(subject)
     body_enc = urllib.parse.quote(body)
-    return f"mailto:asuveleikha@gmail.com?subject={subject_enc}&body={body_enc}"
+    return f"mailto:jugalachaliveret@gmail.com?subject={subject_enc}&body={body_enc}"
 
 def render_grafik_bursa():
     hist = st.session_state.bursa_hist
@@ -261,7 +333,7 @@ st.markdown("""
 
 st.markdown("""
 <div style="text-align:center; padding:8px 0 12px 0;">
-    <div style="font-size:10px; letter-spacing:2px; color:#888; font-weight:700;">TAVO MALKHUTKHA • RUACH HA KADOSH • V6.16 FINAL • 523+ LINES • GRATIS • CV KOMPLIT PENGALAMAN + EMAIL + WA → asuveleikha@gmail.com</div>
+    <div style="font-size:10px; letter-spacing:2px; color:#888; font-weight:700;">TAVO MALKHUTKHA • RUACH HA KADOSH • V6.16 FINAL • 523+ LINES • GRATIS • CV KOMPLIT PENGALAMAN + EMAIL + WA → jugalachaliveret@gmail.com</div>
     <div style="font-size:20px; font-weight:900;">📗 BUKU 4 LEMBAR - FINAL - CV KOMPLIT + GRAFIK DI PUTIH + KUNING STORAGE ROLLING 7 HARI</div>
     <div style="font-size:10px; background:#1565C0; color:white; display:inline-block; padding:4px 12px; border-radius:20px; font-weight:800;">Lembar 2 Merah CV Komplit Pengalaman + Email + WA | Lembar 3 Hijau CV Komplit Mirror Merah | Lembar 4 Kuning Storage + Nasehat Rolling 7 Hari | Grafik Hanya di Putih</div>
 </div>
@@ -280,7 +352,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📄 PUTIH - FORM LOKER CV + GRAFIK", "🔴 M
 
 # TAB 1 PUTIH - FORM LOKER CV + GRAFIK - GRAFIK HANYA DI SINI - FINAL
 with tab1:
-    st.markdown('<div class="lembar lembar-putih"><b>LEMBAR 1 - FORM LOKER + JABATAN - CV KOMPLIT + GRAFIK BURSA VOLUME - GRAFIK HANYA DI SINI - FINAL</b><br/><small>CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA → asuveleikha@gmail.com | Grafik Hanya di Putih Pendaftaran</small></div>', unsafe_allow_html=True)
+    st.markdown('<div class="lembar lembar-putih"><b>LEMBAR 1 - FORM LOKER + JABATAN - CV KOMPLIT + GRAFIK BURSA VOLUME - GRAFIK HANYA DI SINI - FINAL</b><br/><small>CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA → jugalachaliveret@gmail.com | Grafik Hanya di Putih Pendaftaran</small></div>', unsafe_allow_html=True)
     
     st.markdown("#### 📈 Grafik Volume Nilai Orang Banyak Login Dalam Bursa - Hanya di Lembar 1 Putih Pendaftaran - FINAL")
     render_grafik_bursa()
@@ -305,7 +377,7 @@ with tab1:
             email = st.text_input("Alamat Email * - CV Komplit - Pendaftar Pengguna Web dan App", placeholder="cinhonest@gmail.com")
         with col6:
             wa = st.text_input("Nomor WhatsApp * - CV Komplit - Pendaftar Pengguna Web dan App", placeholder="081291904422")
-        submit = st.form_submit_button("✅ SIMPAN CV KOMPLIT & MASUK BURSA + KIRIM KE asuveleikha@gmail.com - FINAL - GRATIS", type="primary", use_container_width=True)
+        submit = st.form_submit_button("✅ SIMPAN CV KOMPLIT & MASUK BURSA + KIRIM KE jugalachaliveret@gmail.com - FINAL - GRATIS", type="primary", use_container_width=True)
         if submit:
             if not nama or not tempat or not email or not wa or not pengalaman:
                 st.error("Lengkapi * bro - wajib isi CV komplit - pengalaman + email + WA pendaftar")
@@ -318,13 +390,13 @@ with tab1:
                     "pengalaman": pengalaman, "skill": skill
                 }
                 add_login_bursa()
-                st.success(f"✅ CV KOMPLIT {nama} ({jabatan}) masuk Bursa! Total: {st.session_state.bursa_total} | Aktif: {st.session_state.bursa_aktif} | CV ke asuveleikha@gmail.com - FINAL")
+                st.success(f"✅ CV KOMPLIT {nama} ({jabatan}) masuk Bursa! Total: {st.session_state.bursa_total} | Aktif: {st.session_state.bursa_aktif} | CV ke jugalachaliveret@gmail.com - FINAL")
                 st.balloons()
                 md = st.session_state.member_data
                 cv_text = generate_cv_text(md)
                 st.code(cv_text, language="text")
                 mailto = generate_mailto_link(md)
-                st.link_button("📧 KLIK UNTUK KIRIM CV KOMPLIT KE asuveleikha@gmail.com - FINAL", mailto, type="primary", use_container_width=True)
+                st.link_button("📧 KLIK UNTUK KIRIM CV KOMPLIT KE jugalachaliveret@gmail.com - FINAL", mailto, type="primary", use_container_width=True)
 
 # TAB 2 MERAH - EMPLOYEE CV KOMPLIT + EMAIL + WA - FINAL
 with tab2:
@@ -337,7 +409,7 @@ with tab2:
         if not md.get("is_emp"):
             st.info(f"Info: Anda {md['nama']} jabatan {md['jabatan']} = Entrepreneur. Lembar ini untuk Employee Staff/Supervisor, tapi tetap tampil mirror CV komplit (tidak blank) - FINAL")
 
-    st.markdown(f'<div style="background:#FFCDD2; padding:8px; border-radius:8px; font-size:11px; font-weight:700;">✅ CV KOMPLIT: {md["nama"]} | {md["jabatan"]} | Employee - Pengalaman + Email + WA Pendaftar Web dan App = CV → asuveleikha@gmail.com - FINAL</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="background:#FFCDD2; padding:8px; border-radius:8px; font-size:11px; font-weight:700;">✅ CV KOMPLIT: {md["nama"]} | {md["jabatan"]} | Employee - Pengalaman + Email + WA Pendaftar Web dan App = CV → jugalachaliveret@gmail.com - FINAL</div>', unsafe_allow_html=True)
     
     col_kiri, col_kanan = st.columns([1.2, 0.8])
     with col_kiri:
@@ -354,7 +426,7 @@ with tab2:
             <b>Alamat Email (pendaftar pengguna web dan app):</b> {md['email']}<br/>
             <b>Nomor WhatsApp (pendaftar pengguna web dan app):</b> {md['wa']}<br/>
             <b>Jabatan:</b> {md['jabatan']}<br/>
-            <b>Status:</b> CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA = CV → asuveleikha@gmail.com - FINAL
+            <b>Status:</b> CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA = CV → jugalachaliveret@gmail.com - FINAL
         </div>
         """, unsafe_allow_html=True)
 
@@ -370,7 +442,7 @@ with tab2:
         <div class="kotak-wewenang">
             <b>SUPERVISOR - Pengawas Staff - CV Komplit:</b><br/>
             • Wewenang: Awasi 3-5 Staff, validasi ERP jam 9, OEE Performance, laporan ke Manager, validasi CV komplit Staff (pengalaman + email + WA pendaftar)<br/>
-            • Tanggung Jawab: Hasil Staff, disiplin tim, training SOP, bantu carikan loker via CV ke asuveleikha@gmail.com, kelola CV komplit
+            • Tanggung Jawab: Hasil Staff, disiplin tim, training SOP, bantu carikan loker via CV ke jugalachaliveret@gmail.com, kelola CV komplit
         </div>
         """, unsafe_allow_html=True)
 
@@ -378,7 +450,7 @@ with tab2:
 
         cv_text = generate_cv_text(md)
         mailto = generate_mailto_link(md)
-        st.link_button("📧 KIRIM CV KOMPLIT INI KE asuveleikha@gmail.com - BANTU CARIKAN LOKER MANUAL - FINAL", mailto, type="primary", use_container_width=True)
+        st.link_button("📧 KIRIM CV KOMPLIT INI KE jugalachaliveret@gmail.com - BANTU CARIKAN LOKER MANUAL - FINAL", mailto, type="primary", use_container_width=True)
         with st.expander("📄 Lihat Text CV Komplit Lengkap Employee (Copy manual) - FINAL"):
             st.code(cv_text, language="text")
 
@@ -398,15 +470,15 @@ with tab2:
 
     st.divider()
     st.markdown("### 🔍 Pencarian Permintaan & Request Penawaran Employee - CV Komplit - FINAL - The Best Interaksi")
-    st.markdown('<div class="kotak-share"><b>Sebagai Pencari Kerja - CV Komplit:</b> Share ke rekan via email, bursa otomatis berkurang - CV komplit pengalaman + email + WA pendaftar ke asuveleikha@gmail.com untuk bantu carikan loker manual - FINAL</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kotak-share"><b>Sebagai Pencari Kerja - CV Komplit:</b> Share ke rekan via email, bursa otomatis berkurang - CV komplit pengalaman + email + WA pendaftar ke jugalachaliveret@gmail.com untuk bantu carikan loker manual - FINAL</div>', unsafe_allow_html=True)
     with st.form("share_emp_final"):
         email_t = st.text_input("Share via Email ke teman/rekan - CV Komplit:", placeholder="teman@email.com - untuk cari kerja / tawarkan jasa - CV komplit", key="share_emp_final_input")
         permintaan = st.text_area("Permintaan Lowongan / Request Employee - CV Komplit:", placeholder="Dicari Staff Admin, Supervisor Gudang, pengalaman..., skill..., email, WA pendaftar...", height=80)
         penawaran = st.text_area("Penawaran Gaji / Benefit - CV Komplit:", placeholder="Gaji 5-7jt, tunjangan, SOP jelas, ERP jam 9, OEE 95%...", height=60)
-        btn = st.form_submit_button("📧 KIRIM & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE asuveleikha@gmail.com - FINAL", type="primary")
+        btn = st.form_submit_button("📧 KIRIM & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE jugalachaliveret@gmail.com - FINAL", type="primary")
         if btn and "@" in email_t:
             kurang_bursa_share(email_t, "Employee share CV Komplit FINAL")
-            st.success(f"Shared ke {email_t}! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke asuveleikha@gmail.com - FINAL")
+            st.success(f"Shared ke {email_t}! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke jugalachaliveret@gmail.com - FINAL")
 
 # TAB 3 HIJAU - ENTREPRENEUR CV KOMPLIT + EMAIL + WA - FINAL - MIRROR MERAH
 with tab3:
@@ -419,7 +491,7 @@ with tab3:
         if not md.get("is_ent"):
             st.info(f"Info: Anda {md['nama']} jabatan {md['jabatan']} = Staff/Supervisor. Lembar ini untuk Entrepreneur Manager/Brand/Usahawan, tapi tetap tampil mirror CV komplit (tidak blank) - FINAL")
 
-    st.markdown(f'<div style="background:#C8E6C9; padding:8px; border-radius:8px; font-size:11px; font-weight:700;">✅ CV KOMPLIT: {md["nama"]} | {md["jabatan"]} | Entrepreneur Mirror Merah - Pengalaman + Email + WA Pendaftar Web dan App = CV → asuveleikha@gmail.com - FINAL</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="background:#C8E6C9; padding:8px; border-radius:8px; font-size:11px; font-weight:700;">✅ CV KOMPLIT: {md["nama"]} | {md["jabatan"]} | Entrepreneur Mirror Merah - Pengalaman + Email + WA Pendaftar Web dan App = CV → jugalachaliveret@gmail.com - FINAL</div>', unsafe_allow_html=True)
     
     st.markdown("""
     <div style="background:white; border:1px solid #A5D6A7; border-radius:12px; padding:12px; margin:10px 0; font-size:11px;">
@@ -443,7 +515,7 @@ with tab3:
             <b>Alamat Email (pendaftar pengguna web dan app):</b> {md['email']}<br/>
             <b>Nomor WhatsApp (pendaftar pengguna web dan app):</b> {md['wa']}<br/>
             <b>Jabatan:</b> {md['jabatan']} (Manager/Brand Manager/Usahawan)<br/>
-            <b>Status:</b> CV Komplit seperti Lembar 2 Merah - Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA = CV → asuveleikha@gmail.com - FINAL
+            <b>Status:</b> CV Komplit seperti Lembar 2 Merah - Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA = CV → jugalachaliveret@gmail.com - FINAL
         </div>
         """, unsafe_allow_html=True)
 
@@ -452,7 +524,7 @@ with tab3:
         <div class="kotak-wewenang" style="border-color:#4CAF50; background:#F1F8E9;">
             <b>MANAGER - CV Komplit - Pengalaman + Email + WA Pendaftar:</b><br/>
             • Wewenang: Kelola 5-10 Staff + 2-3 Supervisor, keputusan strategis, anggaran, rekrutmen, kelola CV komplit pengalaman + email + WA pendaftar pengguna web dan app seperti lembar 2 merah<br/>
-            • Tanggung Jawab: OEE 95%, omzet area, laporan ke Brand Manager, bantu carikan loker via CV komplit ke asuveleikha@gmail.com, kelola CV komplit pendaftar
+            • Tanggung Jawab: OEE 95%, omzet area, laporan ke Brand Manager, bantu carikan loker via CV komplit ke jugalachaliveret@gmail.com, kelola CV komplit pendaftar
         </div>
         """, unsafe_allow_html=True)
         st.markdown("""
@@ -474,7 +546,7 @@ with tab3:
 
         cv_text = generate_cv_text(md)
         mailto = generate_mailto_link(md)
-        st.link_button("📧 KIRIM CV KOMPLIT INI KE asuveleikha@gmail.com - BANTU CARIKAN LOKER / EMPLOYEE MANUAL - FINAL", mailto, type="primary", use_container_width=True)
+        st.link_button("📧 KIRIM CV KOMPLIT INI KE jugalachaliveret@gmail.com - BANTU CARIKAN LOKER / EMPLOYEE MANUAL - FINAL", mailto, type="primary", use_container_width=True)
         with st.expander("📄 Lihat Text CV Komplit Lengkap Entrepreneur (Copy manual) - FINAL - Mirror Merah"):
             st.code(cv_text, language="text")
 
@@ -493,15 +565,15 @@ with tab3:
 
     st.divider()
     st.markdown("### 🔍 Pencarian Permintaan & Request Penawaran Entrepreneur - CV Komplit - FINAL - Mirror Employee - The Best Interaksi")
-    st.markdown('<div class="kotak-share"><b>Sebagai Pencari Employee - CV Komplit:</b> Share lowongan via email ke rekan, bursa otomatis berkurang - Sama kayak Employee tapi untuk cari employee - CV komplit pengalaman + email + WA pendaftar web dan app ke asuveleikha@gmail.com - FINAL</div>', unsafe_allow_html=True)
+    st.markdown('<div class="kotak-share"><b>Sebagai Pencari Employee - CV Komplit:</b> Share lowongan via email ke rekan, bursa otomatis berkurang - Sama kayak Employee tapi untuk cari employee - CV komplit pengalaman + email + WA pendaftar web dan app ke jugalachaliveret@gmail.com - FINAL</div>', unsafe_allow_html=True)
     with st.form("share_ent_final"):
         email_r = st.text_input("Share lowongan via Email ke rekan - CV Komplit:", placeholder="rekan@perusahaan.com - untuk cari employee / tawarkan lowongan - CV komplit", key="share_ent_final_input")
         permintaan = st.text_area("Permintaan Lowongan / Request Employee - CV Komplit:", placeholder="Dicari Staff Admin, Supervisor Gudang, pengalaman..., skill..., email, WA pendaftar...", height=80)
         penawaran = st.text_area("Penawaran Gaji / Benefit - CV Komplit:", placeholder="Gaji 5-7jt, tunjangan, SOP jelas, ERP jam 9, OEE 95%...", height=60)
-        btn = st.form_submit_button("📧 KIRIM PERMINTAAN & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE asuveleikha@gmail.com - FINAL", type="primary")
+        btn = st.form_submit_button("📧 KIRIM PERMINTAAN & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE jugalachaliveret@gmail.com - FINAL", type="primary")
         if btn and "@" in email_r:
             kurang_bursa_share(email_r, f"Entrepreneur {md['jabatan']} cari employee CV Komplit FINAL")
-            st.success(f"Terkirim ke {email_r}! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke asuveleikha@gmail.com - FINAL")
+            st.success(f"Terkirim ke {email_r}! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke jugalachaliveret@gmail.com - FINAL")
 
 # TAB 4 KUNING - RUANG TEDUH - STORAGE LIBRARY + ROLLING NASEHAT 7 HARI - FINAL - TANPA GRAFIK
 with tab4:
@@ -521,7 +593,7 @@ with tab4:
         st.markdown("#### 📜 SOP - Standard Operating Procedure - Storage Library - FINAL")
         st.markdown("""
         <div class="kotak-sop">
-            <b>SOP Loker CV Komplit (Putih):</b> Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill (di bawah pengalaman) + Alamat Email + Nomor Whatsapp = CV → asuveleikha@gmail.com - CV komplit pendaftar pengguna web dan app - Storage library - FINAL<br/>
+            <b>SOP Loker CV Komplit (Putih):</b> Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill (di bawah pengalaman) + Alamat Email + Nomor Whatsapp = CV → jugalachaliveret@gmail.com - CV komplit pendaftar pengguna web dan app - Storage library - FINAL<br/>
             <b>SOP Employee Merah:</b> Staff & Supervisor - CV komplit pengalaman + email + WA pendaftar pengguna web dan app seperti lembar 2 merah - Wewenang & Tanggung Jawab Staff Supervisor - Voice ON - Storage - FINAL<br/>
             <b>SOP Entrepreneur Hijau:</b> Manager, Brand Manager, Usahawan - CV komplit seperti lembar 2 merah lengkapi dengan alamat email whatsapp pendaftar pengguna web dan app - Mirror Merah - Wewenang Manager Brand Usahawan - Voice ON - Storage - FINAL<br/>
             <b>SOP Bursa:</b> 1 Login = 1 Vote, Grafik Volume Nilai Orang Banyak Login - Grafik hanya di lembar 1 putih pendaftaran - FINAL - Storage library
@@ -546,7 +618,7 @@ with tab4:
         st.markdown("""
         <div class="kotak-erp">
             <b>ERP Input Harian Jam 9 Tepat - Storage Library - FINAL - Tanpa Grafik:</b><br/>
-            • Data CV komplit Nama Tempat Tgl Pendidikan Pengalaman Skill Email WA pendaftar pengguna web dan app, Bursa Total Aktif Kerja, Share Log, Kejujuran - Input jam 9 tepat setiap hari - Storage library - CV ke asuveleikha@gmail.com - FINAL<br/>
+            • Data CV komplit Nama Tempat Tgl Pendidikan Pengalaman Skill Email WA pendaftar pengguna web dan app, Bursa Total Aktif Kerja, Share Log, Kejujuran - Input jam 9 tepat setiap hari - Storage library - CV ke jugalachaliveret@gmail.com - FINAL<br/>
             • ERP Kelola: Staff, Supervisor, Manager, Brand Manager, Usahawan - CV komplit pengalaman + email + WA pendaftar - Storage - FINAL<br/>
             • ERP Storage: 5 Rak System - Rak 1 SOP (Fondasi Merah), Rak 2 ERP (Pengelolaan Biru), Rak 3 OEE (Efisiensi Orange 95%), Rak 4 KPI (Evaluasi Ungu), Rak 5 Alkitab (Spiritual Kuning Emas Permanen) - Storage 5 Rak - Tanpa grafik - FINAL - Grafik hanya di Putih<br/>
             • ERP Bursa: Total Login 12, Aktif Vote 8, Sudah Bekerja 4, Konversi 33% - Grafik hanya di lembar 1 putih pendaftaran - FINAL
@@ -579,7 +651,7 @@ with tab4:
         <b>3. Berbagi:</b> Kisah 2:44-45 "Segala kepunyaan mereka adalah kepunyaan bersama" - Share info loker via email ke rekan - CV komplit pengalaman + email + WA pendaftar - Bursa berkurang - Storage - FINAL<br/>
         <b>4. Tavo Malkhutkha:</b> Matius 6:33 & Matius 6:10 "Datanglah KerajaanMu" - Fondasi spiritual - Storage library - Tanpa grafik - FINAL<br/>
         <b>5. 5 Rak Storage Hijau Permanen - FINAL:</b> SOP Merah, ERP Biru, OEE Orange 95%, KPI Ungu, Alkitab Kuning Emas - Storage library aja tanpa grafik - Grafik hanya di lembar 1 putih pendaftaran - FINAL - Bener bro storage library aja<br/>
-        <b>6. Employee & Entrepreneur Tidak Berbayar Gratis Mirror Best CV Komplit - FINAL:</b> Merah = Hijau - CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA (pendaftar pengguna web dan app) → asuveleikha@gmail.com - Storage - FINAL
+        <b>6. Employee & Entrepreneur Tidak Berbayar Gratis Mirror Best CV Komplit - FINAL:</b> Merah = Hijau - CV Komplit = Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA (pendaftar pengguna web dan app) → jugalachaliveret@gmail.com - Storage - FINAL
     </div>
     """, unsafe_allow_html=True)
     tts_voice_all("Alkitab Ruach Ha Kadosh Storage Library Final Tanpa Grafik Grafik Hanya di Putih CV Komplit Pengalaman Email Whatsapp Pendaftar", "spirit", "alkitab_final")
