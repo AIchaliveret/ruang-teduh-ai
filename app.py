@@ -13,12 +13,17 @@ FINAL SESUAI PERMINTAAN BRO - GAS LANGSUNG EDIT - ISTIRAHAT JAM 4 LANJUT INFRAME
 
 import streamlit as st
 import streamlit.components.v1 as components
+try:
+    import assemblyai as aai
+    HAS_AAI = True
+except:
+    HAS_AAI = False
 from datetime import date, datetime
 import json
 import os
 import urllib.parse
 
-st.set_page_config(page_title="Ruang Teduh V6.16 FINAL - CV Komplit + Grafik di Putih + Kuning Storage Rolling", page_icon="📗", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Ruang Teduh V6.18 FINAL FULL + Voice Agent AssemblyAI - 604+ lines", page_icon="📗", layout="wide", initial_sidebar_state="collapsed")
 
 # SESSION - FINAL
 if "member_data" not in st.session_state:
@@ -40,6 +45,8 @@ if "bursa_log" not in st.session_state:
     st.session_state.bursa_log = []
 if "jujur" not in st.session_state:
     st.session_state.jujur = False
+if "pengalaman_voice" not in st.session_state:
+    st.session_state.pengalaman_voice = ""
 
 def add_login_bursa():
     st.session_state.bursa_total += 1
@@ -111,6 +118,43 @@ def parse_nasehat_7_hari(text):
         if not result[hari]:
             result[hari] = f"{hari}: Nasehat {hari} - Ruang Teduh V6.16 FINAL Storage"
     return result
+
+
+def voice_input_assemblyai(label_key="voice_pengalaman"):
+    """VOICE AGENT ASSEMBLYAI UNIVERSAL-3 PRO - V6.18"""
+    if not HAS_AAI:
+        st.warning("⚠️ assemblyai belum di install - tambah di requirements.txt: assemblyai")
+        return None
+    api_key = None
+    try:
+        if "ASSEMBLYAI_API_KEY" in st.secrets:
+            api_key = st.secrets["ASSEMBLYAI_API_KEY"]
+        elif "ASSEMBLYAI_KEY" in st.secrets:
+            api_key = st.secrets["ASSEMBLYAI_KEY"]
+    except:
+        api_key = None
+    if not api_key:
+        st.info("ℹ️ AssemblyAI key belum di set di Streamlit Secrets - pakai text manual dulu")
+        st.caption("Cara: share.streamlit.io > Settings > Secrets > ASSEMBLYAI_API_KEY = 'key_baru'")
+        return None
+    aai.settings.api_key = api_key
+    st.markdown("#### 🎙️ Rekam Pengalaman via Voice - GRATIS - AssemblyAI Universal-3 Pro")
+    audio_val = st.audio_input(f"Klik mic 🎤 - cerita pengalaman - {label_key}", key=label_key)
+    if audio_val:
+        with st.spinner("🔄 Transcribing via Universal-3 Pro..."):
+            try:
+                transcriber = aai.Transcriber()
+                transcript = transcriber.transcribe(audio_val)
+                if transcript.status == aai.TranscriptStatus.completed:
+                    st.success(f"✅ Hasil voice: {transcript.text}")
+                    st.session_state.pengalaman_voice = transcript.text
+                    return transcript.text
+                else:
+                    st.error(f"Gagal: {transcript.status}")
+            except Exception as e:
+                st.error(f"Error: {e}")
+    return None
+
 
 def tts_voice_all(text, role, key_id):
     clean = text.replace('"','').replace("'","").replace("\n"," ").strip()[:280]
