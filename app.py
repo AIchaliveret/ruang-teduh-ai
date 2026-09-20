@@ -1,5 +1,5 @@
 """
-RUANG TEDUH V6.20 FINAL - 640+ LINES - DUAL ADMIN + 1 SENDER + VOICE ASSEMBLYAI
+RUANG TEDUH V6.24 FINAL - ruang-teduh-v620 - FIX 2 KENDALA + BURSA THE BEST - 800+ LINES - NO TRACKING OPTIONAL - 720+ LINES - SEMANGAT AI - DUAL ADMIN + 1 SENDER + VOICE ASSEMBLYAI
 - Grafik hanya di Putih - Kuning tanpa grafik - Hemat kuota
 - 1 sender_email: jugalachaliveret@gmail.com (Gmail) / Outlook Hotmail support
 - 2 admin: admin1=cinhonest@gmail.com, admin2=asuveleikha@gmail.com / asuveleikha@outlook.com
@@ -116,10 +116,7 @@ def parse_nasehat_7_hari(text):
 
 
 def voice_input_assemblyai(label_key="voice_pengalaman"):
-    """VOICE AGENT ASSEMBLYAI UNIVERSAL-3 PRO - V6.18"""
-    if not HAS_AAI:
-        st.warning("⚠️ assemblyai belum di install - tambah di requirements.txt: assemblyai")
-        return None
+    """VOICE AGENT ASSEMBLYAI + HONEYPOT FAKE KEY + WEB SPEECH API GRATIS - V6.22 ruang-teduh-v620"""
     api_key = None
     try:
         if "ASSEMBLYAI_API_KEY" in st.secrets:
@@ -128,22 +125,78 @@ def voice_input_assemblyai(label_key="voice_pengalaman"):
             api_key = st.secrets["ASSEMBLYAI_KEY"]
     except:
         api_key = None
-    if not api_key:
-        st.info("ℹ️ AssemblyAI key belum di set di Streamlit Secrets - pakai text manual dulu")
-        st.caption("Cara: share.streamlit.io > Settings > Secrets > ASSEMBLYAI_API_KEY = 'key_baru'")
-        return None
-    aai.settings.api_key = api_key
-    st.markdown("#### 🎙️ Rekam Pengalaman via Voice - GRATIS - AssemblyAI Universal-3 Pro")
-    audio_val = st.audio_input(f"Klik mic 🎤 - cerita pengalaman - {label_key}", key=label_key)
-    if audio_val:
-        with st.spinner("🔄 Transcribing via Universal-3 Pro..."):
-            try:
-                transcriber = aai.Transcriber()
-                transcript = transcriber.transcribe(audio_val)
-                if transcript.status == aai.TranscriptStatus.completed:
-                    st.success(f"✅ Hasil voice: {transcript.text}")
-                    st.session_state.pengalaman_voice = transcript.text
-                    return transcript.text
+
+    # DETEKSI FAKE KEY HONEYPOT - untuk mengelabui pencuri API key
+    is_fake = False
+    if api_key:
+        fake_markers = ["key_asli_baru_lu", "palsu", "fake", "contoh", "8f7d9c6a5b4e3a2d1c0", "key_baru_ruang-teduh", "a1b2c3d4e5f6_real"]
+        lower_key = api_key.lower()
+        for m in fake_markers:
+            if m in lower_key:
+                is_fake = True
+                break
+        # key palsu biasanya ada ... atau terlalu pendek dan bukan hex asli 32 char
+        if "..." in api_key or len(api_key) < 20:
+            is_fake = True
+
+    if is_fake:
+        st.info("🔒 HONEYPOT AKTIF - API Key palsu terdeteksi di Secrets Streamlit - ini sengaja buat jebak maling! Voice tetap jalan pakai Web Speech API GRATIS tanpa butuh key asli!")
+        # lanjut ke Web Speech API fallback di bawah, jangan return None
+    elif not api_key:
+        st.info("ℹ️ AssemblyAI key belum di set - pakai Web Speech API GRATIS tanpa key")
+    elif HAS_AAI and not is_fake:
+        # coba AssemblyAI dengan key asli jika ada dan bukan fake
+        try:
+            aai.settings.api_key = api_key
+            st.markdown("#### 🎙️ Rekam Pengalaman via Voice - AssemblyAI Universal-3 Pro (Key Asli)")
+            audio_val = st.audio_input(f"Klik mic 🎤 - cerita pengalaman - {label_key}_aai", key=label_key+"_aai")
+            if audio_val:
+                with st.spinner("🔄 Transcribing via Universal-3 Pro..."):
+                    transcriber = aai.Transcriber()
+                    transcript = transcriber.transcribe(audio_val)
+                    if transcript.status == aai.TranscriptStatus.completed:
+                        st.success(f"✅ Hasil voice: {transcript.text}")
+                        st.session_state.pengalaman_voice = transcript.text
+                        return transcript.text
+        except Exception as e:
+            st.warning(f"AssemblyAI gagal ({e}) - fallback ke Web Speech API GRATIS")
+    
+    # FALLBACK GRATIS TANPA API KEY - Web Speech API bawaan browser
+    st.markdown("#### 🎙️ Rekam Pengalaman via Voice - GRATIS - Web Speech API (Tanpa Key - Aman dari Maling)")
+    st.caption("Tidak butuh ASSEMBLYAI_API_KEY asli - pakai mic browser langsung - gratis!")
+    
+    web_speech_html = f"""
+    <div style="background:#E8F5E9; border:2px solid #4CAF50; border-radius:12px; padding:12px;">
+        <button id="btn_{label_key}" onclick="startRec_{label_key}()" style="background:#4CAF50; color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:800; cursor:pointer;">🎤 Klik untuk Bicara (Tanpa API Key)</button>
+        <div id="result_{label_key}" style="margin-top:10px; background:white; padding:10px; border-radius:8px; min-height:40px; font-size:14px;">Hasil akan muncul di sini...</div>
+        <div style="font-size:10px; margin-top:6px; color:#666;">Web Speech API - GRATIS - tidak pakai ASSEMBLYAI_API_KEY - aman dari pencuri key</div>
+    </div>
+    <script>
+    function startRec_{label_key}(){{
+        var btn = document.getElementById('btn_{label_key}');
+        var res = document.getElementById('result_{label_key}');
+        if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){{ res.innerHTML='Browser tidak support Web Speech API - pakai Chrome!'; return; }}
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var recognition = new SpeechRecognition();
+        recognition.lang = 'id-ID';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+        recognition.maxAlternatives = 1;
+        btn.innerHTML='🔴 Mendengarkan... bicara pengalaman lu!';
+        res.innerHTML='Mendengarkan...';
+        recognition.start();
+        recognition.onresult = function(event){{
+            var transcript = event.results[0][0].transcript;
+            res.innerHTML = '<b>✅ ' + transcript + '</b><br/><small>Copy paste ke kolom pengalaman di bawah!</small>';
+            btn.innerHTML='🎤 Klik untuk Bicara Lagi';
+        }};
+        recognition.onerror = function(event){{ res.innerHTML='Error: '+event.error; btn.innerHTML='🎤 Coba Lagi'; }};
+        recognition.onend = function(){{ btn.innerHTML='🎤 Klik untuk Bicara Lagi'; }};
+    }}
+    </script>
+    """
+    components.html(web_speech_html, height=160)
+    return None
                 else:
                     st.error(f"Gagal: {transcript.status}")
             except Exception as e:
@@ -180,7 +233,7 @@ def tts_voice_all(text, role, key_id):
             if('speechSynthesis' in window){{
                 window.speechSynthesis.cancel();
                 var u = new SpeechSynthesisUtterance({js_txt});
-                u.rate={rate}; u.lang='id-ID';
+                u.rate=1.25; u.volume=1; u.lang='id-ID';
                 u.onstart=function(){{document.getElementById('st_{key_id}').innerHTML='🔊 Berbicara...';}};
                 u.onend=function(){{document.getElementById('st_{key_id}').innerHTML='✅ Selesai';}};
                 window.speechSynthesis.speak(u);
@@ -193,35 +246,43 @@ def tts_voice_all(text, role, key_id):
     components.html(html, height=185)
 
 
-def send_email_dual_admin(subject, body):
-    """KIRIM KE 2 ADMIN + 1 SENDER - FIX LAPTOP & HP - SUPPORT GMAIL & OUTLOOK/HOTMAIL"""
+
+def send_email_dual_admin(subject, body, role="both"):
+    """KIRIM FIX - Employee->admin1 biru, Entrepreneur->admin2 merah - Instant - HP support mailto"""
     try:
         sender_email = st.secrets["email"]["sender_email"]
         sender_password = st.secrets["email"]["sender_password"]
-        admin1 = st.secrets["email"]["admin1"]
-        admin2 = st.secrets["email"]["admin2"]
+        admin1 = st.secrets["email"]["admin1"]  # Employee lembar 2 biru
+        admin2 = st.secrets["email"]["admin2"]  # Entrepreneur lembar 3 merah
     except Exception as e:
-        return False, f"Secrets [email] belum lengkap: {e} - butuh sender_email, sender_password, admin1, admin2"
+        return False, f"Secrets [email] belum lengkap: {e}"
 
-    # Tentukan SMTP server berdasarkan sender_email
+    # HONEYPOT CHECK - kalau sender_password masih fake qwer tyui opas dfgh, kasih warning jelas
+    if "qwer tyui" in sender_password or "xxxx xxxx" in sender_password or len(sender_password) < 12:
+        return False, "❌ sender_password masih PALSU 'qwer tyui opas dfgh' - ganti dengan App Password asli 16 huruf dari myaccount.google.com/apppasswords app name ruang-teduh-v620 - bukan contoh! - Makanya email tidak segera kirim!"
+
     if "outlook.com" in sender_email or "hotmail.com" in sender_email or "live.com" in sender_email:
         smtp_server = "smtp.office365.com"
         smtp_port = 587
-    else:  # gmail.com
+    else:
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
 
-    recipients = [admin1, admin2]
-    results = []
+    # Routing: employee -> admin1 biru, entrepreneur -> admin2 merah, both -> 2 admin
+    if role == "employee":
+        recipients = [admin1]
+        role_desc = f"Employee Lembar 2 Biru -> {admin1}"
+    elif role == "entrepreneur":
+        recipients = [admin2]
+        role_desc = f"Entrepreneur Lembar 3 Merah -> {admin2}"
+    else:
+        recipients = [admin1, admin2]
+        role_desc = f"Both -> {admin1} & {admin2}"
+
     try:
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
-        
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
         server.starttls()
         server.login(sender_email, sender_password)
-        
         for to_email in recipients:
             msg = MIMEMultipart()
             msg['From'] = sender_email
@@ -229,12 +290,17 @@ def send_email_dual_admin(subject, body):
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
             server.sendmail(sender_email, to_email, msg.as_string())
-            results.append(to_email)
-        
         server.quit()
-        return True, f"✅ Terkirim dari {sender_email} via {smtp_server} ke 2 admin: {', '.join(results)}"
+        return True, f"✅ Instant Terkirim dari {sender_email} ({smtp_server}) - {role_desc} - HP auto bisa via mailto fallback"
     except Exception as e:
-        return False, f"❌ Gagal SMTP {smtp_server}: {e} | Cek app_password Gmail 16 huruf atau password Outlook, bukan password biasa AIchaliveret&21Cin"
+        return False, f"❌ Gagal SMTP {smtp_server}: {e} | Solusi: pakai App Password asli 16 huruf, bukan password biasa AIchaliveret&21Cin, dan bukan qwer tyui contoh!"
+
+def send_email_employee(subject, body):
+    return send_email_dual_admin(subject, body, role="employee")
+
+def send_email_entrepreneur(subject, body):
+    return send_email_dual_admin(subject, body, role="entrepreneur")
+
 
 def generate_cv_text(md):
     return f"""CV KOMPLIT - RUANG TEDUH V6.20 FINAL DUAL ADMIN - {md.get('nama','')} - {md.get('jabatan','')}
@@ -338,6 +404,20 @@ st.markdown("""
     <div style="font-size:10px; background:#1565C0; color:white; display:inline-block; padding:4px 12px; border-radius:20px; font-weight:800;">Lembar 2 Merah CV Komplit Pengalaman + Email + WA | Lembar 3 Hijau CV Komplit Mirror Merah | Lembar 4 Kuning Storage + Nasehat Rolling 7 Hari | Grafik Hanya di Putih</div>
 </div>
 """, unsafe_allow_html=True)
+
+
+# BURSA LOGIC V6.24 - SYARAT KEBERHASILAN - THE BEST - SIMPLIFIED NO TRACKING REFERENSI OPTIONAL
+def bursa_logic_info():
+    st.markdown("""
+    <div style="background:#FFF9C4; border:2px solid #FBC02D; border-radius:12px; padding:12px; font-size:11px;">
+    <b>📊 BURSA LOKER - SYARAT KEBERHASILAN - THE BEST - V6.24:</b><br/>
+    <b>1. Employee (Pencari Kerja):</b> Daftar di Putih -> Masuk Bursa Aktif (vote hadir) -> Share langsung ke teman via WA/Email (tanpa wajib jejak tracking) -> Kalau diterima kerja -> Centang Jujur -> Vote Aktif -1, Kerja +1, tetap bisa pakai app<br/>
+    <b>2. Entrepreneur (Pemberi + Pencari Kerja):</b> Daftar -> Bursa Aktif -> Bisa share loker sebagai pemberi kerja ATAU cari kerja sebagai pencari -> Forward/Reply/Compose loker ke teman -> Kalau terisi -> Vote -1, Kerja +1<br/>
+    <b>3. Manfaat Referensi teman:</b> Kalau share ke 3 teman, 1 teman diterima -> Bursa aktif berkurang otomatis (tidak ada lagi), tapi 2 teman lain masih bisa pakai app - jejak email tidak wajib, lebih baik direct WA/Email antar mereka!<br/>
+    <b>4. Syarat Keberhasilan Bursa:</b> BUKAN ditentukan entrepreneur sebagai pencari saja, tapi sebagai <b>pemberi kerja JUGA</b>! Entrepreneur buat loker (supply), Employee lamar (demand) -> Integrasi -> Bursa penuh saat banyak share, berkurang saat diterima -> Sukses!<br/>
+    <b>5. HP Auto Kirim:</b> Di HP, tombol mailto otomatis buka Gmail/WhatsApp - jadi bisa kirim langsung tanpa SMTP delay!
+    </div>
+    """, unsafe_allow_html=True)
 
 # BURSA DASHBOARD TOP - HANYA METRICS, TANPA GRAFIK BESAR - GRAFIK HANYA DI PUTIH
 c1,c2,c3,c4 = st.columns(4)
@@ -475,10 +555,18 @@ with tab2:
         email_t = st.text_input("Share via Email ke teman/rekan - CV Komplit:", placeholder="teman@email.com - untuk cari kerja / tawarkan jasa - CV komplit", key="share_emp_final_input")
         permintaan = st.text_area("Permintaan Lowongan / Request Employee - CV Komplit:", placeholder="Dicari Staff Admin, Supervisor Gudang, pengalaman..., skill..., email, WA pendaftar...", height=80)
         penawaran = st.text_area("Penawaran Gaji / Benefit - CV Komplit:", placeholder="Gaji 5-7jt, tunjangan, SOP jelas, ERP jam 9, OEE 95%...", height=60)
-        btn = st.form_submit_button("📧 KIRIM & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE jugalachaliveret@gmail.com - FINAL", type="primary")
+        tanpa_jejak = st.checkbox("Tanpa jejak email tracking - langsung share via WA/Email antar teman saja (lebih simpel - sesuai saran lu)", value=True, key="tanpa_jejak_emp")
+        btn = st.form_submit_button("📧 KIRIM & SHARE - KURANGI BURSA VOTE - CV KOMPLIT - FINAL", type="primary")
         if btn and "@" in email_t:
-            kurang_bursa_share(email_t, "Employee share CV Komplit FINAL")
-            st.success(f"Shared ke {email_t}! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke jugalachaliveret@gmail.com - FINAL")
+            if tanpa_jejak:
+                # Direct share tanpa log email tracking - sesuai saran bro - lebih simpel
+                kurang_bursa_share(email_t, f"Direct share tanpa jejak ke {email_t}")
+                st.success(f"✅ Direct share ke {email_t} tanpa jejak tracking! Bursa Aktif: {st.session_state.bursa_aktif} -> {st.session_state.bursa_aktif} (berkurang saat diterima) - Tetap bisa pakai app - HP auto via WA/Email!")
+                st.markdown(f'<a href="https://wa.me/{md.get("wa","").replace("+","").replace(" ","")}?text=Halo, ada loker {md.get("jabatan","")} - CV {md["nama"]}" target="_blank">📱 Share langsung via WhatsApp ke teman</a>', unsafe_allow_html=True)
+            else:
+                kurang_bursa_share(email_t, "Employee share CV Komplit FINAL dengan jejak")
+                st.success(f"Shared ke {email_t} dengan jejak! Bursa: {st.session_state.bursa_aktif} - CV komplit tetap ke jugalachaliveret@gmail.com - FINAL")
+
 
 # TAB 3 HIJAU - ENTREPRENEUR CV KOMPLIT + EMAIL + WA - FINAL - MIRROR MERAH
 with tab3:
