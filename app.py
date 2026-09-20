@@ -116,7 +116,7 @@ def parse_nasehat_7_hari(text):
 
 
 def voice_input_assemblyai(label_key="voice_pengalaman"):
-    """VOICE AGENT ASSEMBLYAI + HONEYPOT FAKE KEY + WEB SPEECH API GRATIS - V6.22 ruang-teduh-v620"""
+    """VOICE AGENT ASSEMBLYAI + HONEYPOT FAKE KEY + WEB SPEECH API GRATIS - V6.24 ruang-teduh-v620 - FIX INDENT"""
     api_key = None
     try:
         if "ASSEMBLYAI_API_KEY" in st.secrets:
@@ -126,7 +126,6 @@ def voice_input_assemblyai(label_key="voice_pengalaman"):
     except:
         api_key = None
 
-    # DETEKSI FAKE KEY HONEYPOT - untuk mengelabui pencuri API key
     is_fake = False
     if api_key:
         fake_markers = ["key_asli_baru_lu", "palsu", "fake", "contoh", "8f7d9c6a5b4e3a2d1c0", "key_baru_ruang-teduh", "a1b2c3d4e5f6_real"]
@@ -135,41 +134,42 @@ def voice_input_assemblyai(label_key="voice_pengalaman"):
             if m in lower_key:
                 is_fake = True
                 break
-        # key palsu biasanya ada ... atau terlalu pendek dan bukan hex asli 32 char
         if "..." in api_key or len(api_key) < 20:
             is_fake = True
 
     if is_fake:
-        st.info("🔒 HONEYPOT AKTIF - API Key palsu terdeteksi di Secrets Streamlit - ini sengaja buat jebak maling! Voice tetap jalan pakai Web Speech API GRATIS tanpa butuh key asli!")
-        # lanjut ke Web Speech API fallback di bawah, jangan return None
+        st.info("🔒 HONEYPOT AKTIF - API Key palsu terdeteksi - jebak maling! Voice tetap jalan Web Speech API GRATIS tanpa key!")
     elif not api_key:
         st.info("ℹ️ AssemblyAI key belum di set - pakai Web Speech API GRATIS tanpa key")
-    elif HAS_AAI and not is_fake:
-        # coba AssemblyAI dengan key asli jika ada dan bukan fake
+
+    # Jika key asli dan assemblyai ada, coba pakai AssemblyAI
+    if not is_fake and api_key and 'HAS_AAI' in globals() and HAS_AAI:
         try:
             aai.settings.api_key = api_key
-            st.markdown("#### 🎙️ Rekam Pengalaman via Voice - AssemblyAI Universal-3 Pro (Key Asli)")
+            st.markdown("#### 🎙️ Rekam Pengalaman via Voice - AssemblyAI Universal-3 Pro")
             audio_val = st.audio_input(f"Klik mic 🎤 - cerita pengalaman - {label_key}_aai", key=label_key+"_aai")
             if audio_val:
-                with st.spinner("🔄 Transcribing via Universal-3 Pro..."):
+                with st.spinner("🔄 Transcribing..."):
                     transcriber = aai.Transcriber()
                     transcript = transcriber.transcribe(audio_val)
                     if transcript.status == aai.TranscriptStatus.completed:
                         st.success(f"✅ Hasil voice: {transcript.text}")
                         st.session_state.pengalaman_voice = transcript.text
                         return transcript.text
+                    else:
+                        st.error(f"Gagal: {transcript.status}")
         except Exception as e:
             st.warning(f"AssemblyAI gagal ({e}) - fallback ke Web Speech API GRATIS")
-    
-    # FALLBACK GRATIS TANPA API KEY - Web Speech API bawaan browser
-    st.markdown("#### 🎙️ Rekam Pengalaman via Voice - GRATIS - Web Speech API (Tanpa Key - Aman dari Maling)")
-    st.caption("Tidak butuh ASSEMBLYAI_API_KEY asli - pakai mic browser langsung - gratis!")
+
+    # FALLBACK GRATIS TANPA API KEY - Web Speech API - INSTANT <1 detik
+    st.markdown("#### 🎙️ Rekam Pengalaman via Voice - GRATIS - Web Speech API (Tanpa Key - No Delay)")
+    st.caption("Tidak butuh ASSEMBLYAI_API_KEY asli - mic browser langsung - gratis instant!")
     
     web_speech_html = f"""
     <div style="background:#E8F5E9; border:2px solid #4CAF50; border-radius:12px; padding:12px;">
-        <button id="btn_{label_key}" onclick="startRec_{label_key}()" style="background:#4CAF50; color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:800; cursor:pointer;">🎤 Klik untuk Bicara (Tanpa API Key)</button>
+        <button id="btn_{label_key}" onclick="startRec_{label_key}()" style="background:#4CAF50; color:white; border:none; padding:10px 18px; border-radius:20px; font-weight:800; cursor:pointer;">🎤 Klik untuk Bicara (Tanpa API Key - Instant)</button>
         <div id="result_{label_key}" style="margin-top:10px; background:white; padding:10px; border-radius:8px; min-height:40px; font-size:14px;">Hasil akan muncul di sini...</div>
-        <div style="font-size:10px; margin-top:6px; color:#666;">Web Speech API - GRATIS - tidak pakai ASSEMBLYAI_API_KEY - aman dari pencuri key</div>
+        <div style="font-size:10px; margin-top:6px; color:#666;">Web Speech API - GRATIS - tidak pakai ASSEMBLYAI_API_KEY - instant &lt;1 detik</div>
     </div>
     <script>
     function startRec_{label_key}(){{
@@ -197,11 +197,7 @@ def voice_input_assemblyai(label_key="voice_pengalaman"):
     """
     components.html(web_speech_html, height=160)
     return None
-                else:
-                    st.error(f"Gagal: {transcript.status}")
-            except Exception as e:
-                st.error(f"Error: {e}")
-    return None
+
 
 
 def tts_voice_all(text, role, key_id):
