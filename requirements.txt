@@ -1,3 +1,2 @@
-streamlit==1.39.0
-pandas==2.2.3
-gTTS==2.4.0
+streamlit
+assemblyai
