@@ -1,273 +1,505 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from io import BytesIO
 
-st.set_page_config(page_title="SAAS.SCM.SYSTEM V4 - Fashion Garment Market Control", page_icon="🧵", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Ruang Teduh AI - FINAL MIRROR - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH", page_icon="🕊️", layout="wide")
 
-# CSS ala blueprint dark + yellow
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Geist+Mono:wght@400;700&display=swap');
-.main { background:#0a0f1a; }
-h1,h2,h3 { font-family:'Instrument Serif', serif; }
-code, .mono { font-family:'Geist Mono', monospace; }
-.yellow { color:#ffde59; }
-.card { background:#faf8f2; border:1px solid #1a2332; border-radius:12px; padding:16px; color:#0a0f1a; }
-</style>
-""", unsafe_allow_html=True)
-
-if 'vendors' not in st.session_state:
-    st.session_state.vendors = [
-        {"nama":"PT Sinar Kainindo","kategori":"Kain Katun Mori Primis","email":"sales@sinarkain.co.id","phone":"0812-1234-5678","saldo":12500000,"notes":"Langganan sejak 2019, kualitas Mori Primis 90cm 6kg/25kodi bagus, tempo 14 hari, pernah telat 2 hari Jan 2026. Top: Mori Primis 90cm.","alamat":"Tanah Abang Blok A Lt.3 No.12, Jakarta"},
-        {"nama":"Toko Kimia Makmur Pekalongan","kategori":"Kimia Naptol Reactive","email":"kimia.makmur.pkl@gmail.com","phone":"0823-9876-5432","saldo":8750000,"notes":"Supplier AS-G AS-BS AS-BO, Nitrit, Fast Red B, Fast Blue B. Harga stabil, perlu cek stok AS-G 75-300gr.","alamat":"Jl. Jetayu No.45 Pekalongan"},
-        {"nama":"UD Siongkah Jaya","kategori":"Lilin Gondorukem","email":"siongkah.jaya@yahoo.com","phone":"0857-1111-2222","saldo":3200000,"notes":"Parafin 60% 52-56C, Micro 20%, Siongkah 15%, Beeswax 5%. Campuran sesuai spec bak semen 90x120x18cm.","alamat":"Jl. Raya Batik No.88, Pekalongan"},
-    ]
-
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/892/892458.png", width=60)
-    st.title("SAAS.SCM.V3")
-    st.caption("Prototype Fashion Garment Market Control
-Autonomous + Accurate")
-    menu = st.radio("Navigasi", [
-        "Dashboard Accurate",
-        "Master Bahan Baku (Bal-Balan)",
-        "FIFO / LIFO / Average",
-        "Vendor & Supplier Notes (Accurate Style)",
-        "PO / SQR / BAPO / Surat Jalan",
-        "Keuangan - Buku Besar + Kwitansi + Invoice + ESC/POS",
-        "Gudang C12 + GC Kepala Gudang",
-        "Transport GPS Live -6.2088,106.8456",
-        "Ruang Teduh Loker + Ruach Ha Kadosh",
-        "Marketing Digital Links",
-        "Director - Statistik Demand Planner Market Control",
-        "Live HTML Full V4"
-    ])
-    st.divider()
-    st.info("📶 WiFi: super-infrared.local\n192.168.4.1 laptop\n192.168.4.22 HP meta.aichaliveret\n✉️ Email terdaftar teregistrasi")
-    st.success("Repo: AIchaliveret/saas_scm_fashion_market_v3\nBranch: main")
-
-if menu == "Dashboard Accurate":
-    st.title("SAAS.SCM.SYSTEM V4 - Prototype Fashion Garment Market Control V3.5")
-    st.markdown("**ERP Garment Autonomous + Accurate System + Vendor Notes + GPS + Ruang Teduh** - saingi Accurate software akuntansi")
-    c1,c2,c3,c4 = st.columns(4)
-    c1.metric("Total Persediaan Yards", "12,450 Yd", "+320")
-    c2.metric("Nilai FIFO", "Rp 186,750,000", "-2.1%")
-    c3.metric("PO Pending", "8 PO", "BAPO Waiting GC")
-    c4.metric("Sales Hari Ini Tanah Abang+ITC+IG", "47 Kodi", "+12%")
-    st.markdown("### RQS 6 Factors - Zero Blast Radius + Future of Work")
-    colA, colB = st.columns(2)
-    with colA:
-        st.markdown("""
-        **1. Forwarding Hybrid 3PL:** Jakarta-only bottleneck → Bandung/Semarang/Surabaya hub
-
-        **2. SCM Integration:** Bal-balan → Gudang C12 → Potong 180/200/240/270/300/340cm → Kodi 20pcs → WIP 1x2x3x cetak
-
-        **3. Demand Planner:** #OOTDJakarta scanner + Kwitansi Tanah Abang OCR → AI.Meta generate insights
-
-        """)
-    with colB:
-        st.markdown("""
-        **4. Benefit:** Tenaga kerja tetap inti, autonomous helps not replaces, operator Bak1 60-70°C Bak2 15-20°C + es
-
-        **5. Need:** Market Intelligence IG/FB/WA/TikTok/Shopee + ITC grocery retail
-
-        **6. Marketing:** Direktur Business Owner Aku Bald Lead control via super-infrared.local
-
-        """)
-    st.divider()
-    df = pd.DataFrame({"size":[180,200,240,270,300,340],"kodi":[12,18,22,15,9,6],"m_tot":[43.2,72,105.6,81,54,40.8]})
-    st.bar_chart(df, x="size", y="kodi")
-
-elif menu == "Master Bahan Baku (Bal-Balan)":
-    st.header("Persediaan Bahan Baku Batik Keseluruhan")
-    st.caption("Kain katun yards bal-balan + pewarna reactive + kimia naptol AS-G AS-BS AS-BO + nitrit air keras soda api soda abu emping kuweh lilin parafin siongkah")
-    data = [
-        ["Mori Primis 90cm 6kg/25 kodi","Kain","Yd",450,"PT Sinar Kainindo","Bal"],
-        ["Reactive Blue 300gr/25L","Pewarna","L",25,"Kimia Makmur","Drum"],
-        ["Reactive Pink 150gr","Pewarna","L",18,"Kimia Makmur","Drum"],
-        ["Naptol AS-G 75-300gr","Kimia","Kg",32,"Kimia Makmur","Sak"],
-        ["Naptol AS-BS","Kimia","Kg",18,"Kimia Makmur","Sak"],
-        ["Naptol AS-BO","Kimia","Kg",15,"Kimia Makmur","Sak"],
-        ["Fast Red B / Fast Blue B","Diazo","Kg",12,"Kimia Makmur","Sak"],
-        ["NaNO2 Nitrit 3kg","Aux","Kg",24,"Kimia Makmur","Sak"],
-        ["HCl Air Keras 8L","Aux","L",40,"Kimia Makmur","Jerigen"],
-        ["NaOH Soda Api 6L","Aux","L",36,"Kimia Makmur","Jerigen"],
-        ["Garam 10kg","Aux","Kg",100,"UD Garam","Sak"],
-        ["Soda Ash Na2CO3 / Soda Abu Emping Kueh","Aux","Kg",60,"UD Kimia","Sak"],
-        ["Lilin Parafin 60% 52-56C + Micro 20% + Gondorukem Siongkah 15% + Beeswax 5%","Lilin","Kg",85,"UD Siongkah Jaya","Bal"],
-    ]
-    df = pd.DataFrame(data, columns=["Nama Bahan","Kategori","Satuan","Stok","Vendor","Kemasan"])
-    st.dataframe(df, use_container_width=True)
-    st.info("Formula: 1 Yd=0.9144M | 1 Kodi=20pcs | Kodi Real=FLOOR(Total M / (cm/100) /20) | Input ke Buku Besar otomatis")
-
-elif menu == "FIFO / LIFO / Average":
-    st.header("Buku Besar + FIFO / LIFO / Average - Saingi Accurate")
-    st.caption("Pembukuan penuh nggak syst? IYA - kayak Accurate System")
-    method = st.selectbox("Metode", ["FIFO","LIFO","Average Weighted"])
-    tx = pd.DataFrame([
-        ["2026-10-20","Masuk","Mori Primis","100 Yd","10,000","1,000,000"],
-        ["2026-10-25","Masuk","Mori Primis","50 Yd","12,000","600,000"],
-        ["2026-10-28","Keluar","Potong 200cm","120 Yd","-","-"],
-    ], columns=["Tanggal","Jenis","Item","Qty","Harga/Yd","Total"])
-    st.table(tx)
-    if method=="FIFO":
-        st.success("FIFO: Jual 120 Yd = 100 Yd @10k + 20 Yd @12k = Rp 1,240,000 | Sisa 30 Yd @12k = Rp 360,000")
-    elif method=="LIFO":
-        st.warning("LIFO: Jual 120 Yd = 50 Yd @12k + 70 Yd @10k = Rp 1,300,000 | Sisa 30 Yd @10k = Rp 300,000")
-    else:
-        st.info("Average Weighted: Avg = (1,000,000+600,000)/150 = 10,666.7 | HPP = 120*10,666.7 = Rp 1,280,000 | Sisa 30*10,666.7 = Rp 320,000")
-
-elif menu == "Vendor & Supplier Notes (Accurate Style)":
-    st.header("Vendor Notes - Lembar Halaman Untuk Vendor")
-    st.caption("Sudah disediakan lembar halaman untuk vendor agar memudahkan business utama mencatat dan merekam para vendor suppliernya dalam saas.scm.system yang nb sebagai pembukuan akuntansi juga saingi Accurate")
-    for i, v in enumerate(st.session_state.vendors):
-        with st.expander(f"{v['nama']} - {v['kategori']} | Hutang: Rp {v['saldo']:,}"):
-            c1,c2 = st.columns([2,1])
-            with c1:
-                st.text(f"Alamat: {v['alamat']}
-Email terdaftar: {v['email']}
-Phone: {v['phone']}")
-                notes = st.text_area(f"Notes lembar halaman {v['nama']}", value=v['notes'], key=f"notes_{i}", height=100)
-                if st.button(f"Simpan Notes {v['nama']}", key=f"save_{i}"):
-                    st.session_state.vendors[i]['notes']=notes
-                    st.success("Notes tersimpan ke Buku Besar Vendor!")
-            with c2:
-                st.metric("Saldo Hutang", f"Rp {v['saldo']:,}")
-                st.button(f"Kirim Email Bukti Bayar ke {v['email']}", key=f"email_{i}")
-                st.button(f"Lihat Buku Besar", key=f"ledger_{i}")
-
-elif menu == "PO / SQR / BAPO / Surat Jalan":
-    st.header("SQR + PO + BAPO + Surat Jalan + GC Kepala Gudang")
-    st.markdown("**SQR** - Supplier Quotation Request | **PO** - Purchase Order | **BAPO** - Berita Acara PO | **GC** - General Check Kepala Gudang")
-    col1,col2 = st.columns(2)
-    with col1:
-        st.subheader("PO-2026-001 - Mori Primis 25 Kodi")
-        st.write("Vendor: PT Sinar Kainindo | Tgl: 2026-10-28 | Status: Approved | Total: Rp 15,000,000")
-        st.checkbox("GC Mr. Soesendi Lim - QC Visual IMX219 8MP OK", value=True)
-        st.checkbox("GC Mister Aliang - TCS34725 L*a*b* Delta E <2 OK", value=True)
-        st.checkbox("HX711 5kg LOCK buzzer 75gr Timbang OK")
-    with col2:
-        st.subheader("Surat Jalan SJ-2026-088")
-        st.write("Sopir: Ahmad Subarjo - Grand Max B1234ABC 5-8 Bal 800Kg | Phone: 0812-xxxx (aktif di kwitansi)")
-        st.write("Sopir: Rian Hidayat - L300 Pick Up 10-15 Bal 1.5 Ton")
-        st.write("Sopir: M Faisal - Truk Engkel CDD/CDE 25-40 Bal 2.5-4 Ton")
-        st.write("Sopir: Dedi Kurniawan - Fuso/CDD Long 80-120 Bal 7-12 Ton")
-        st.info("Logistik Transportasi - Forwarding Hybrid Jakarta → Bandung/Semarang/Surabaya")
-
-elif menu == "Keuangan - Buku Besar + Kwitansi + Invoice + ESC/POS":
-    st.header("Keuangan Lengkap - Buku Besar + Kwitansi Pelunasan Kas Manual + Invoice + Driver Printer")
-    j = pd.DataFrame([
-        ["2026-10-28","Persediaan - Mori Primis","Debet","15,000,000",""],
-        ["2026-10-28","Kas / Hutang Usaha","Kredit","","15,000,000"],
-        ["2026-10-29","Kas","Debet","5,000,000","Pelunasan KWT-001"],
-        ["2026-10-29","Hutang Usaha - Sinar Kainindo","Kredit","","5,000,000"],
-    ], columns=["Tanggal","Akun","D/K","Debet","Kredit"])
-    st.dataframe(j, use_container_width=True)
-    c1,c2 = st.columns(2)
-    with c1:
-        st.subheader("Kwitansi Pelunasan Teregistrasi - Kas Manual ke Vendor")
-        st.write("No: KWT-2026-001 | Vendor: PT Sinar Kainindo | Jumlah: Rp 5,000,000 | Metode: Kas | Status: Lunas")
-        st.file_uploader("Upload Bukti Kas Manual")
-    with c2:
-        st.subheader("Invoice + Driver Printer ESC/POS")
-        st.write("Invoice Tanah Abang: INV-TA-2026-012 | 25 Kodi @200cm | Total Rp 7,500,000")
-        st.code("ESC/POS Driver: 58mm Thermal + A4 PDF\nLOGO SUPER SECURE SYST v3.0\nEmail: bukti ke vendor & pelanggan")
-        if st.button("Simulate Print Invoice"):
-            st.success("Printed via ESC/POS driver - PDF preview generated!")
-
-elif menu == "Gudang C12 + GC Kepala Gudang":
-    st.header("Gudang C12 - GC Kepala Gudang Approval")
-    st.map(pd.DataFrame({"lat":[-6.2088],"lon":[106.8456]}))
-    st.info("Gudang C12 - Ketel Uap Tabung 500L 2 Ruang 2.5 bar 90kg/jam 88% kayu 100kg→70kg→50kg | Trafo Isolasi 500VA SELV 6-12V auto OFF 17:00/19:00 | Safety MCB 6A RCD 30mA MOV 275V Thermal Fuse 72°C IP54")
-    st.dataframe(pd.DataFrame([["Rak A1","Mori Primis","45 Kodi","QR-001"],["Rak A2","Reactive Blue","25 L","QR-002"],["Rak B1","Naptol AS-G","32 Kg","QR-003"]], columns=["Rak","Item","Stok","QR"]))
-
-elif menu == "Transport GPS Live -6.2088,106.8456":
-    st.header("Transportasi Terhubung GPS atau Google Maps")
-    st.caption("Perjalanan selama pengantaran transport logistik terbaca dan terpantau jelas - GPS Live atau cukup Google Maps")
-    c1,c2 = st.columns([2,1])
-    with c1:
-        st.map(pd.DataFrame({"lat":[-6.2088,-6.21,-6.19,-6.22],"lon":[106.8456,106.86,106.84,106.83]}))
-        st.markdown("""
-        **Live Tracking:**
-        - Ahmad Subarjo Grand Max 5-8 Bal 800Kg - On the way to Gudang C12 12km ETA 25min - Phone aktif di kwitansi
-        - Rian Hidayat L300 10-15 Bal 1.5 Ton - Delivered to Business Owner Gudang
-        - M Faisal Truk Engkel 25-40 Bal 2.5-4 Ton - Return
-        - Dedi Kurniawan Fuso 80-120 Bal 7-12 Ton - To Pekalongan ITC
-        """)
-    with c2:
-        st.subheader("Google Maps vs GPS")
-        st.radio("Pilih", ["Google Maps Embed (cukup)", "GPS Module ESP32 + Phone GPS (live)"])
-        st.success("Keduanya bisa! Google Maps cukup untuk juri, GPS ESP32 untuk real tracking.")
-        st.info("Turbine Francis Faraday ε=-dΦ/dt Generator 1000W×4 | Thermal Battery 500L ATS <15s | IPAL 3-stage | Cerobong 12M SS304 Cyclone+Scrubber")
-
-elif menu == "Ruang Teduh Loker + Ruach Ha Kadosh":
-    st.header("Ruang Teduh Loker + Ruach Ha Kadosh - Spiritual Kelestarian Lingkungan Kerja Lebih Baik")
-    st.caption("Perekrutan SDM - Vultr Agent Rush Future of Work + Zero Blast Radius | Better Improvement | Ruach Ha Kadosh spiritualitas utama")
-    st.markdown("""
-    **Kenapa Ruang Teduh?** Juri Lablab.ai hackathon Vultr Agent Rush menetapkan perekrutan SDM - kita gunakan Ruang Teduh Loker kita
+# --- FUNGSI EMAIL OTOMATISASI TANPA KLERIKAL ---
+def kirim_email_otomatis(to_email, subject, body_text, mode=""):
+    """Kirim email beneran via SMTP jika secrets ada, fallback log jika tidak"""
+    # Simpan ke log bursa untuk audit
+    if "email_log" not in st.session_state:
+        st.session_state.email_log = []
     
-    - **Repo Ruang Teduh:** ruang-teduh-ai, ruang-teduh-perpustakaan-dki, aichaliveret-vercel-ready, silver-broccoli-aichaliveret-scm
-    - **Zero Blast Radius:** Seleksi kandidat CV parsing in isolated sandbox - docker rm -f safe, verifiable output
-    - **Future of Work:** Jadwal wawancara Playwright browser automation sandbox + calendar, orientasi karyawan baru checklist safety SOP IPAL cerobong
-    - **Ruach Ha Kadosh:** Spiritualitas utama kelestarian - Ruach Ha Kadosh sebagai better improvement lingkungan kerja lebih baik, wellbeing AI for Future of Work Kerja max 60km dari rumah, Building in public Elohim is
-    - **Pelatihan SDM:** Checklist pelatihan skill batik canting 3-6 bulan, koperasi setempat, BPJS Ketenagakerjaan Jamsostek + pensiun - bisa menyusul bila pengusaha koperasi siap menerima prototype
-    """)
-    st.link_button("Buka ruang-teduh-ai GitHub", "https://github.com/AIchaliveret/ruang-teduh-ai")
-    st.link_button("Buka Ruang Teduh Perpustakaan DKI", "https://github.com/AIchaliveret/ruang-teduh-perpustakaan-dki")
+    log_entry = {
+        "waktu": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+        "ke": to_email,
+        "subject": subject,
+        "mode": mode,
+        "permintaan": body_text[:200],
+        "status": "Queued"
+    }
+    
+    try:
+        # Cek apakah ada secrets email di Streamlit Cloud
+        if "email" in st.secrets and "smtp_user" in st.secrets["email"]:
+            smtp_user = st.secrets["email"]["smtp_user"]
+            smtp_pass = st.secrets["email"]["smtp_pass"]
+            smtp_host = st.secrets["email"].get("smtp_host", "smtp.gmail.com")
+            smtp_port = st.secrets["email"].get("smtp_port", 587)
+            
+            msg = MIMEMultipart()
+            msg['From'] = smtp_user
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body_text, 'plain'))
+            
+            # CC ke admin jika mode Bursa
+            if "Bursa" in mode:
+                msg['Cc'] = "jugalachaliveret@gmail.com, cinhonest@gmail.com"
+            
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            
+            recipients = [to_email]
+            if "Bursa" in mode:
+                recipients += ["jugalachaliveret@gmail.com", "cinhonest@gmail.com"]
+            
+            server.sendmail(smtp_user, recipients, msg.as_string())
+            server.quit()
+            log_entry["status"] = "✅ Terkirim Beneran via SMTP"
+            st.session_state.email_log.append(log_entry)
+            return True, "✅ Email terkirim beneran via SMTP!"
+        else:
+            # Fallback: Simulasi tapi masuk log + tampilkan cara setup
+            log_entry["status"] = "📝 Simulasi (Secrets belum di-set)"
+            st.session_state.email_log.append(log_entry)
+            return True, "📝 Simulasi terkirim (masuk log) - Setup SMTP di Streamlit Secrets untuk kirim beneran"
+    except Exception as e:
+        log_entry["status"] = f"❌ Gagal: {str(e)[:100]}"
+        st.session_state.email_log.append(log_entry)
+        return False, f"❌ Gagal kirim: {e}"
 
-elif menu == "Marketing Digital Links":
-    st.header("Laman Link URL Marketing Digital Instagram dan Media Sosial Lain")
-    st.caption("Sediakan laman penyediaan tempat link url marketing digital instagram dan media sosial lain")
+# Init email_log
+if "email_log" not in st.session_state:
+    st.session_state.email_log = []
+
+# --- INIT NASEHAT MINGGUAN (Editable) ---
+if "nasehat_mingguan" not in st.session_state:
+    st.session_state.nasehat_mingguan = {
+        "etika": """ETIKA KERJA RUANG TEDUH - The Best Interaksi:
+1. Jujur dalam CV - Jangan tambah pengalaman palsu. Kejujuran adalah modal utama.
+2. Hormat waktu - Datang tepat waktu, OEE 95% dimulai dari disiplin.
+3. Saling tolong - Bursa Vote bukan saingan, tapi keluarga. Bantu rekan dapat kerja = koin teduh.
+""",
+        "sop": """SOP MANAGER - CV Komplit - Pengalaman + Email + WA Pendaftar:
+• Wewenang: Kelola 5-10 Staff + 2-3 Supervisor, keputusan strategis, anggaran, rekrutmen
+• Prosedur: Kelola CV komplit pengalaman + email + WA pendaftar pengguna web dan app seperti lembar 2 merah
+• Tools: Gunakan lembar hijau perekrutan manager yang sudah ada kolom khusus mengetik penjelasan
+""",
+        "oee": """OEE - Overall Equipment Effectiveness - 95% Target:
+• Availability: Hadir hati & fisik 100% - Jangan bawa masalah rumah ke gudang
+• Performance: Kerja tanpa ngomel, target 120 Yd / hari - Bak semen 90x120x18cm
+• Quality: Ulang salah <2% - Delta E<2 TCS34725, QC IMX219 8MP
+• Rumus: OEE = Availability x Performance x Quality = 95%
+""",
+        "erp": """ERP - Enterprise Resource Planning - Klerikal Jadi Manajemen:
+• Kontrol: Dari lembar-lembar Windows/file kecil (clerical) naik jadi management control
+• Gudang: Besar 22M vs C12 - Bal/Yard/Kodi pisah - FIFO LIFO Average Accurate
+• API: HP/Laptop -> Google Sheets API -> Jurnal_Umum -> Buku_Besar_T
+• GPS: Live -6.2088,106.8456 UNIKA Atma Jaya - Sopir Ahmad Subarjo Grand Max
+""",
+        "kpi": """KPI - Key Performance Indicators:
+• Manager: OEE 95%, omzet area 15%, laporan ke Brand Manager, bantu carikan loker via CV komplit ke jugalachaliveret@gmail.com
+• Brand Manager: Brand growth 15%, market share, omzet brand, kelola CV Manager & Staff komplit + email + WA pendaftar
+• Usahawan: Omzet total, profit, keberlangsungan usaha, spiritual Tavo Malkhutkha, kelola semua jajaran komplit + email + WA pendaftar web dan app
+• Bursa Vote: Vote Aktif 8, Sudah Bekerja 4 - Metrics Kecil FINAL - Hemat kuota
+""",
+        "ruach_hakadosh": """RUACH HAKADOSH - Nasihat Spiritual Mingguan - 2-3 Ayat:
+"Jikalau kamu tinggal di dalam Aku dan firman-Ku tinggal di dalam kamu, mintalah apa saja yang kamu kehendaki, dan kamu akan menerimanya." - Yohanes 15:7
+
+"Segala sesuatu yang kamu kehendaki supaya orang perbuat kepadamu, perbuatlah demikian juga kepada mereka." - Matius 7:12
+
+Bekerja bukan hanya untuk omzet, tapi untuk menjadi berkat. Satu orang bangkit = Satu keluarga bangkit = Satu perusahaan bangkit.
+"""
+    }
+
+if "bursa_vote" not in st.session_state:
+    st.session_state.bursa_vote = pd.DataFrame([
+        ["Sari Manager", "Jakarta Barat", "S1 Manajemen", "2018-2024 Manager PT ABC 10 Staff omzet 1M", "Leadership, ERP Accurate", "manager@email.com", "081291904422", "Employee", 8, 4],
+    ], columns=["Nama", "Tempat Lahir", "Pendidikan", "Pengalaman", "Skill", "Email", "WA", "Status", "Vote Aktif", "Sudah Bekerja"])
+
+# --- SIDEBAR ---
+menu = st.sidebar.radio("Menu Ruang Teduh", [
+    "Lembar Hijau - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH - FINAL",
+    "Bursa Vote - Entrepreneur CV Komplit - Metrics Kecil - FINAL",
+    "Pencarian Permintaan & Request Penawaran - The Best Interaksi - FINAL",
+    "Nasehat Mingguan - Edit SOP OEE ERP KPI RUACH HAKADOSH",
+    "Members Ruang Teduh - 4 Kolom Mapping DKI"
+])
+
+# === LEMBAR HIJAU - EDITED SESUAI REQUEST ===
+if menu == "Lembar Hijau - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH - FINAL":
+    st.title("🕊️ LEMBAR HIJAU - ETIKA & Pembelajaran & Spiritual RUACH HAKADOSH - FINAL")
+    
+    # --- AUTO DAILY 1 HARI 1 NASEHAT DARI 5 NASEHAT - SOP OEE ERP KPI RUACH ---
+    st.markdown("### 📅 Auto Daily - 1 Hari 1 Nasehat Otomatis")
+    # 5 nasehat: SOP, OEE, ERP, KPI, RUACH HAKADOSH - rotating per hari
+    nasehat_5_keys = ["sop", "oee", "erp", "kpi", "ruach_hakadosh"]
+    nasehat_5_labels = {
+        "sop": "📋 SOP - Standard Operating Procedure",
+        "oee": "⚙️ OEE - Overall Equipment Effectiveness",
+        "erp": "🏭 ERP - Enterprise Resource Planning",
+        "kpi": "📊 KPI - Key Performance Indicators",
+        "ruach_hakadosh": "🔥 RUACH HAKADOSH - Spiritual 2-3 Ayat"
+    }
+    # Hitung hari ini - 1 hari 1 nasehat otomatis
+    today = datetime.now()
+    day_idx = today.day % 5  # 0-4 rotating setiap tanggal
+    weekday_name = today.strftime("%A")
+    today_key = nasehat_5_keys[day_idx]
+    today_label = nasehat_5_labels[today_key]
+    today_text = st.session_state.nasehat_mingguan[today_key]
+    
+    with st.container(border=True):
+        col_auto1, col_auto2 = st.columns([2,1])
+        with col_auto1:
+            st.success(f"**Hari ini {weekday_name}, {today.strftime('%d-%m-%Y')} - Nasehat Otomatis: {today_label}**")
+            st.markdown(f"<div style='background:#e8f5e9; padding:15px; border-radius:10px; border-left:4px solid #2e7d32;'>{today_text}</div>", unsafe_allow_html=True)
+            st.caption(f"Rotasi otomatis 5 nasehat: SOP → OEE → ERP → KPI → RUACH → balik lagi - 1 hari 1 nasehat")
+        with col_auto2:
+            # API Voice Recorder Otomatis Hari Ini
+            def api_voice_daily(text):
+                try:
+                    from gtts import gTTS
+                    clean = text.replace("•"," ").replace("📜"," ").replace("📋"," ").replace("⚙️"," ").replace("🏭"," ").replace("📊"," ").replace("🔥"," ").replace("✅"," ").replace("🔊"," ").replace("🕊️"," ")[:3900]
+                    tts = gTTS(text=clean, lang='id', slow=False)
+                    mp3_fp = BytesIO()
+                    tts.write_to_fp(mp3_fp)
+                    mp3_fp.seek(0)
+                    return mp3_fp, None
+                except Exception as e:
+                    return None, str(e)
+            
+            st.markdown("**🔊 Auto Play Hari Ini**")
+            if st.button(f"🔊 PLAY OTOMATIS HARI INI - {today_key.upper()}", key="play_auto_today", type="primary"):
+                mp3, err = api_voice_daily(today_text)
+                if mp3:
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button(f"📥 Download {today_key.upper()} Hari Ini", data=mp3, file_name=f"{today_key.upper()}_{today.strftime('%Y%m%d')}_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_auto_today")
+                    st.success(f"✅ API Voice Recorder membacakan otomatis 1 hari 1 nasehat: {today_label}")
+                else:
+                    st.error(err)
+            else:
+                # Preview auto play - generate saat load (auto)
+                try:
+                    mp3_preview, _ = api_voice_daily(today_text[:500])
+                    if mp3_preview:
+                        st.audio(mp3_preview, format="audio/mp3")
+                        st.caption("🔊 Preview otomatis hari ini - klik PLAY di atas untuk full")
+                except:
+                    pass
+            
+            st.markdown("**Jadwal Rotasi 5 Nasehat:**")
+            st.caption("Tgl 1,6,11,16,21,26,31 = SOP\nTgl 2,7,12,17,22,27 = OEE\nTgl 3,8,13,18,23,28 = ERP\nTgl 4,9,14,19,24,29 = KPI\nTgl 5,10,15,20,25,30 = RUACH")
+    
+    st.divider()
+    # --- ETIKA & ADVICE UTAMA (BISA DIEDIT VIA NASEHAT MINGGUAN) ---
+    st.subheader("📜 ETIKA - Pembelajaran Advices - Mirror Merah")
+    st.markdown(st.session_state.nasehat_mingguan["etika"])
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("📋 SOP - Standard Operating Procedure")
+        st.info(st.session_state.nasehat_mingguan["sop"])
+        
+        st.subheader("⚙️ OEE - Overall Equipment Effectiveness")
+        st.success(st.session_state.nasehat_mingguan["oee"])
+    
+    with col2:
+        st.subheader("🏭 ERP - Enterprise Resource Planning")
+        st.warning(st.session_state.nasehat_mingguan["erp"])
+        
+        st.subheader("📊 KPI'S - Key Performance Indicators")
+        st.error(st.session_state.nasehat_mingguan["kpi"])
+    
+    st.divider()
+    st.subheader("🔥 RUACH HAKADOSH - 2-3 Ayat - Spiritual")
+    st.markdown(f"""
+    <div style="background-color:#e8f5e9; padding:20px; border-radius:10px; border-left:5px solid #2e7d32;">
+    {st.session_state.nasehat_mingguan["ruach_hakadosh"]}
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # --- SPEAKER ENTREPRENEUR - API VOICE RECORDER - BISA BACAKAN PER NASEHAT ---
+    st.divider()
+    st.subheader("🔊 API VOICE RECORDER - AI Membacakan Nasehat Mingguan SOP OEE ERP KPI RUACH HAKADOSH - TII System")
+    
+    # Fungsi API Voice Recorder - gTTS Indonesia
+    def api_voice_recorder(text, filename, lang='id'):
+        """API Voice Recorder - gTTS Indonesia - Bersihkan simbol"""
+        try:
+            from gtts import gTTS
+            clean = text.replace("•"," ").replace("📜"," ").replace("📋"," ").replace("⚙️"," ").replace("🏭"," ").replace("📊"," ").replace("🔥"," ").replace("✅"," ").replace("🔊"," ").replace("🕊️"," ")[:3900]
+            tts = gTTS(text=clean, lang=lang, slow=False)
+            mp3_fp = BytesIO()
+            tts.write_to_fp(mp3_fp)
+            mp3_fp.seek(0)
+            return mp3_fp, None
+        except Exception as e:
+            return None, str(e)
+    
+    with st.container(border=True):
+        st.write("CV Komplit Entrepreneur Contoh Sari Manager jabatan Manager tempat lahir Jakarta Barat tanggal lahir 21-09-1994 pendidikan S1 Manajemen pengalaman kerja 2018-2024 Manager...")
+        st.info("🎙️ **API Voice Recorder** - Pilih nasehat mingguan di bawah, klik PLAY - AI akan bacakan SOP, OEE, ERP, KPI, RUACH HAKADOSH pakai suara Indonesia - Sesuai screenshot fdd300")
+        
+        # 6 Tombol PLAY terpisah - sesuai permintaan sayang
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown("**📜 ETIKA**")
+            st.caption(st.session_state.nasehat_mingguan["etika"][:100]+"...")
+            if st.button("🔊 PLAY ETIKA", key="play_etika"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["etika"], "etika.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download ETIKA.mp3", data=mp3, file_name="ETIKA_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_etika")
+                else: st.error(err)
+            
+            st.markdown("**📋 SOP**")
+            st.caption(st.session_state.nasehat_mingguan["sop"][:100]+"...")
+            if st.button("🔊 PLAY SOP", key="play_sop"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["sop"], "sop.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download SOP.mp3", data=mp3, file_name="SOP_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_sop")
+                else: st.error(err)
+                
+        with col2:
+            st.markdown("**⚙️ OEE**")
+            st.caption(st.session_state.nasehat_mingguan["oee"][:100]+"...")
+            if st.button("🔊 PLAY OEE", key="play_oee"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["oee"], "oee.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download OEE.mp3", data=mp3, file_name="OEE_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_oee")
+                else: st.error(err)
+            
+            st.markdown("**🏭 ERP**")
+            st.caption(st.session_state.nasehat_mingguan["erp"][:100]+"...")
+            if st.button("🔊 PLAY ERP", key="play_erp"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["erp"], "erp.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download ERP.mp3", data=mp3, file_name="ERP_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_erp")
+                else: st.error(err)
+        
+        with col3:
+            st.markdown("**📊 KPI**")
+            st.caption(st.session_state.nasehat_mingguan["kpi"][:100]+"...")
+            if st.button("🔊 PLAY KPI", key="play_kpi"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["kpi"], "kpi.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download KPI.mp3", data=mp3, file_name="KPI_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_kpi")
+                else: st.error(err)
+            
+            st.markdown("**🔥 RUACH HAKADOSH**")
+            st.caption(st.session_state.nasehat_mingguan["ruach_hakadosh"][:100]+"...")
+            if st.button("🔊 PLAY RUACH HAKADOSH", key="play_ruach"):
+                mp3, err = api_voice_recorder(st.session_state.nasehat_mingguan["ruach_hakadosh"], "ruach.mp3")
+                if mp3: 
+                    st.audio(mp3, format="audio/mp3")
+                    st.download_button("📥 Download RUACH.mp3", data=mp3, file_name="RUACH_HAKADOSH_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_ruach")
+                else: st.error(err)
+        
+        st.divider()
+        # PLAY SEMUA - Gabungan ETIKA + SOP OEE ERP KPI RUACH
+        st.markdown("**🎧 PLAY SEMUA - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH**")
+        teks_semua = f"{st.session_state.nasehat_mingguan['etika']} . {st.session_state.nasehat_mingguan['sop']} . {st.session_state.nasehat_mingguan['oee']} . {st.session_state.nasehat_mingguan['erp']} . {st.session_state.nasehat_mingguan['kpi']} . {st.session_state.nasehat_mingguan['ruach_hakadosh']}"
+        st.text_area("Preview SEMUA nasehat (editable di menu Nasehat Mingguan):", value=teks_semua[:1200], height=100, key="preview_semua", disabled=True)
+        if st.button("🔊 PLAY SEMUA - AI Voice Recorder API - TII System", key="play_semua", type="primary"):
+            mp3, err = api_voice_recorder(teks_semua, "semua.mp3")
+            if mp3:
+                st.audio(mp3, format="audio/mp3")
+                st.success("✅ API Voice Recorder TII System membacakan SEMUA Nasehat Mingguan - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH - Ini kalimat dan kolom di atasnya ya syst!")
+                st.download_button("📥 Download SEMUA.mp3", data=mp3, file_name="NASEHAT_MINGGUAN_LENGKAP_Ruang_Teduh.mp3", mime="audio/mp3", key="dl_semua")
+            else:
+                st.error(f"Gagal TTS: {err}. Pastikan requirements.txt ada gTTS==2.4.0")
+        
+        st.toggle("Voice ON - API Voice Recorder Active", value=True, key="voice_on_api")
+        st.caption("Siap - Klik PLAY per nasehat - Hasil rekam nasehat mingguan dari perekaman yang sudah kita berikan yaitu DENGAN SOP, OEE, ERP DAN KPI'S JUGA NASEHAT RUACH HAKADOSH - ini kalimat dan kolom di atasnya ya syst. - API Voice Recorder gTTS Indonesia - TII System")
+
+    # --- TEKS KECIL FONT 12-14 - INTERNAL MANAGER & BRAND & USAHAWAN ONLY - TETAP DIJELASKAN ---
+    st.divider()
     st.markdown("""
-    **Instagram:** @cinhonest - Even Garden - AI Chaliveret
+    <div style="font-size:12px; color:#666; background-color:#f5f5f5; padding:10px; border-radius:5px;">
+    <b>Internal MANAGER & BRAND & USAHAWAN ONLY harap isi dan lengkapi CV KOMPLIT + EMAIL + WA PENDAFTAR [PEMBERI KERJA DAN PENCARI KERJA] - FINAL - MIRROR MERAH</b><br>
+    📄 CV KOMPLIT - ENTREPRENEUR - MIRROR MERAH : Bursa Vote - Entrepreneur CV Komplit - Metrics Kecil - FINAL<br>
+    <i>Laman ini lembar hijau teks font kecil 12-14 - Untuk pemberi kerja dan pencari kerja - FINAL - Mirror Merah - CV Komplit seperti Lembar 2 Merah: Nama + Tempat Lahir + Tgl Lahir + Pendidikan + Pengalaman Kerja + Skill + Email + WA + CV → jugalachaliveret@gmail.com - FINAL</i>
+    </div>
+    """, unsafe_allow_html=True)
 
-    **Facebook:** even.garden.637384 - Even Garden
+elif menu == "Bursa Vote - Entrepreneur CV Komplit - Metrics Kecil - FINAL":
+    st.title("📊 Bursa Vote - Entrepreneur CV Komplit - Metrics Kecil - FINAL")
+    col1, col2 = st.columns([2,1])
+    with col1:
+        st.subheader("KELOLA MANAGER & BRAND & USAHAWAN ONLY - CV KOMPLIT + EMAIL + WA PENDAFTAR - FINAL - MIRROR MERAH")
+        st.dataframe(st.session_state.bursa_vote, use_container_width=True)
+    with col2:
+        st.metric("Vote Aktif", "8")
+        st.metric("Sudah Bekerja", "4")
+        st.caption("Grafik hanya ada 1 di Lembar 1 Putih Pendaftaran - di sini metrics kecil aja - FINAL - Mirror Employee - Hemat kuota")
+        with st.container(border=True):
+            st.markdown("✅ **Kolom Kejujuran Update - CV Komplit - FINAL**")
+            st.write("Centang jika sudah dapat employee - Amsal 12:22")
 
-    **Threads:** @cinhonest
+elif menu == "Pencarian Permintaan & Request Penawaran - The Best Interaksi - FINAL":
+    st.title("🔍 Pencarian Permintaan & Request Penawaran Entrepreneur - CV Komplit - FINAL - Mirror Employee - The Best Interaksi")
+    
+    st.markdown("""
+    <div style="background-color:#fff8e1; padding:10px; border-radius:5px; border:1px dashed #ffb300; font-size:13px;">
+    Sebagai Pencari Employee - CV Komplit: Share lowongan via email ke rekan, bursa otomatis berkurang. Sama kayak Employee tapi untuk cari employee. CV komplit pengalaman + email + WA pendaftar web dan app ke jugalachaliveret@gmail.com - FINAL
+    </div>
+    """, unsafe_allow_html=True)
+    
+    with st.form("form_permintaan"):
+        st.subheader("Share lowongan via Email ke rekan - CV Komplit:")
+        email_rekan = st.text_input("Email Rekan (untuk cari employee / tawarkan lowongan) - CV Komplit", placeholder="rekan@perusahaan.com - untuk cari employee / tawarkan lowongan - CV Komplit")
+        
+        st.subheader("Permintaan Lowongan / Request Employee - CV Komplit:")
+        permintaan = st.text_area("Dicari Staff Admin, Supervisor Gudang, pengalaman ..., skill ..., email, WA pendaftar...", height=100)
+        
+        st.subheader("Penawaran Gaji / Benefit - CV Komplit:")
+        penawaran = st.text_area("Gaji 5-7jt, tunjangan, SOP jelas, ERP jelas 9, OEE 95%...", height=80)
+        
+        st.divider()
+        # PILIHAN REKRUT INDEPENDEN
+        st.subheader("⚙️ Pilihan Rekrutmen:")
+        input_bursa = st.checkbox("✅ Input ke Bursa Vote (rekrut via sistem - kurangi Bursa Vote)", value=True)
+        rekrut_independen = st.checkbox("🤝 Rekrut Independen hanya antar sesama rekan (tanpa melalui klerikal kita)", value=False)
+        st.caption("Jika centang 'Rekrut Independen' saja, maka lowongan hanya terkirim ke email rekan sesama (peer-to-peer), tidak masuk Bursa Vote dan tidak melalui klerikal kita.")
+        
+        submit = st.form_submit_button("🔴 KIRIM PERMINTAAN & SHARE - KURANGI BURSA VOTE - CV KOMPLIT KE jugalachaliveret@gmail.com - FINAL", type="primary")
+        
+        if submit:
+            if not email_rekan:
+                st.error("Isi email rekan dulu sayang!")
+            else:
+                # Buat body email otomatisasi peer-to-peer
+                subject = f"CV KOMPLIT - Permintaan Lowongan - {permintaan[:30]} - Ruang Teduh V7.2 FINAL"
+                body_email = f"""
+CV KOMPLIT - RUANG TEDUH V7.20 FINAL DUAL ADMIN
+========================================
+Share lowongan via Email ke rekan - CV Komplit: {email_rekan}
+Permintaan Lowongan / Request Employee - CV Komplit: {permintaan}
+Penawaran Gaji / Benefit - CV Komplit: {penawaran}
 
-    **TikTok:** @cinhonest (prototype)
+Mode: {'Bursa Vote + Peer-to-Peer' if input_bursa and rekrut_independen else 'Bursa Vote' if input_bursa else 'Rekrut Independen Peer-to-Peer Tanpa Klerikal'}
+Waktu: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}
+Pengirim: Manager/Bursa Vote System
+CC: jugalachaliveret@gmail.com, cinhonest@gmail.com (jika mode Bursa)
 
-    **Shopee:** Sari Batik Store
+Bursa: Total {len(st.session_state.bursa_vote)} | Aktif {st.session_state.bursa_vote['Vote Aktif'].sum() if 'Vote Aktif' in st.session_state.bursa_vote else 8} | Kerja {st.session_state.bursa_vote['Sudah Bekerja'].sum() if 'Sudah Bekerja' in st.session_state.bursa_vote else 4}
+========================================
+ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH ada di app.
+"""
+                
+                # Logika kirim otomatisasi tanpa klerikal
+                if input_bursa and not rekrut_independen:
+                    # Mode 1: Bursa Vote saja - kirim ke rekan + CC ke admin
+                    ok, msg = kirim_email_otomatis(email_rekan, subject, body_email, mode="Bursa Vote")
+                    if ok:
+                        # Kurangi Bursa Vote otomatis
+                        st.session_state.bursa_vote.loc[0, 'Vote Aktif'] = st.session_state.bursa_vote.loc[0, 'Vote Aktif'] - 1 if st.session_state.bursa_vote.loc[0, 'Vote Aktif'] > 0 else 0
+                        st.success(f"✅ Terkirim ke {email_rekan}! Bursa: {st.session_state.bursa_vote.loc[0, 'Vote Aktif']} - CV komplit tetap ke jugalachaliveret@gmail.com & cinhonest@gmail.com - {msg}")
+                        st.balloons()
+                    else:
+                        st.error(msg)
+                        
+                elif rekrut_independen and not input_bursa:
+                    # Mode 2: Rekrut Independen saja - HANYA antar rekan, tanpa klerikal kita
+                    ok, msg = kirim_email_otomatis(email_rekan, subject, body_email, mode="Rekrut Independen Tanpa Klerikal")
+                    if ok:
+                        st.success(f"✅ Rekrut Independen: Terkirim hanya ke sesama rekan {email_rekan} (peer-to-peer) - Tanpa Bursa Vote & Tanpa Klerikal - {msg}")
+                        st.info("📧 Ini rekrut independen hanya antar sesama rekan saja - tidak masuk Bursa Vote - tidak lewat admin")
+                    else:
+                        st.error(msg)
+                        
+                elif input_bursa and rekrut_independen:
+                    # Mode 3: Kedua-duanya - Bursa + Independen
+                    ok1, msg1 = kirim_email_otomatis(email_rekan, subject, body_email, mode="Bursa Vote + Independen")
+                    if ok1:
+                        st.session_state.bursa_vote.loc[0, 'Vote Aktif'] = st.session_state.bursa_vote.loc[0, 'Vote Aktif'] - 1 if st.session_state.bursa_vote.loc[0, 'Vote Aktif'] > 0 else 0
+                        st.success(f"✅ Terkirim ke Bursa Vote + Rekrut Independen ke {email_rekan} + CC ke jugalachaliveret@gmail.com & cinhonest@gmail.com - {msg1}")
+                        st.balloons()
+                    else:
+                        st.error(msg1)
+                else:
+                    st.warning("⚠️ Pilih salah satu: Input ke Bursa Vote atau Rekrut Independen - biar jelas antar alamat email saling memberikan permintaan")
+                
+                # Tampilkan log email otomatisasi
+                if st.session_state.email_log:
+                    st.divider()
+                    st.subheader("📧 Log Email Otomatisasi - Tanpa Klerikal - Peer-to-Peer")
+                    st.dataframe(pd.DataFrame(st.session_state.email_log).tail(10), use_container_width=True)
+                    st.caption("Ini log bukti antar alamat email saling memberikan permintaan dan pengiriman perekrutan - otomatis tanpa klerikal kita")
+                
+                # Info setup SMTP jika belum
+                if "email" not in st.secrets:
+                    with st.expander("🔧 Cara Setup Email Otomatis Beneran (biar kekirim ke inbox cinhonest@gmail.com beneran)", expanded=False):
+                        st.markdown("""
+                        **Biar email beneran masuk inbox, bukan cuma simulasi:**
+                        1. Di Streamlit Cloud dashboard → App → Settings → Secrets
+                        2. Paste ini:
+                        ```toml
+                        [email]
+                        smtp_user = "jugalachaliveret@gmail.com"
+                        smtp_pass = "app_password_gmail_16_karakter"
+                        smtp_host = "smtp.gmail.com"
+                        smtp_port = 587
+                        ```
+                        3. Dapatkan app_password: myaccount.google.com → Security → 2-Step → App Passwords → buat baru
+                        4. Save → Reboot App → Test lagi - sekarang email beneran kekirim!
+                        
+                        **Sementara ini (tanpa secrets):** Email masuk ke Log di atas sebagai bukti otomatisasi tanpa klerikal - sudah terotomatisasi antar alamat email, tinggal aktifkan SMTP biar masuk Gmail beneran.
+                        """)
 
-    **BlueSky / X:** @aichaliveret
 
-    **LinkedIn:** AIchaliveret
+elif menu == "Nasehat Mingguan - Edit SOP OEE ERP KPI RUACH HAKADOSH":
+    st.title("📝 Nasehat Mingguan - Edit SOP OEE ERP KPI + RUACH HAKADOSH - Terhubung Merah Kuning Hijau")
+    st.caption("Semua nasehat (SOP, OEE, ERP dan KPI's serta nasehat Ruach HaKadosh) ini bisa edit di dalam nasehat mingguan ya syst. Koneksi: Lembar Merah + Kuning + Hijau = 1 Nasehat Mingguan")
+    
+    st.subheader("Apakah ada nasehat mingguan yang terkoneksi dari seluruhnya lembar merah kuning dan hijau?")
+    st.success("YA ADA! 1 Nasehat Mingguan ini terkoneksi ke 3 lembar: Merah (CV Komplit), Kuning (Bursa Vote), Hijau (Manager/Brand/Usahawan). Edit di sini, update di semua!")
+    
+    with st.container(border=True):
+        st.subheader("Edit ETIKA")
+        etika = st.text_area("ETIKA - Pembelajaran Advices", value=st.session_state.nasehat_mingguan["etika"], height=150, key="edit_etika")
+    
+    with st.container(border=True):
+        st.subheader("Edit SOP")
+        sop = st.text_area("SOP - Manager Brand Usahawan", value=st.session_state.nasehat_mingguan["sop"], height=120, key="edit_sop")
+    
+    with st.container(border=True):
+        st.subheader("Edit OEE")
+        oee = st.text_area("OEE - Overall Equipment Effectiveness", value=st.session_state.nasehat_mingguan["oee"], height=120, key="edit_oee")
+    
+    with st.container(border=True):
+        st.subheader("Edit ERP")
+        erp = st.text_area("ERP - Enterprise Resource Planning", value=st.session_state.nasehat_mingguan["erp"], height=120, key="edit_erp")
+    
+    with st.container(border=True):
+        st.subheader("Edit KPI'S")
+        kpi = st.text_area("KPI - Key Performance Indicators", value=st.session_state.nasehat_mingguan["kpi"], height=150, key="edit_kpi")
+    
+    with st.container(border=True):
+        st.subheader("Edit RUACH HAKADOSH - 2-3 Ayat")
+        ruach = st.text_area("RUACH HAKADOSH - Spiritual", value=st.session_state.nasehat_mingguan["ruach_hakadosh"], height=200, key="edit_ruach")
+    
+    if st.button("💾 SIMPAN NASEHAT MINGGUAN - Update Merah Kuning Hijau", type="primary"):
+        st.session_state.nasehat_mingguan = {
+            "etika": etika,
+            "sop": sop,
+            "oee": oee,
+            "erp": erp,
+            "kpi": kpi,
+            "ruach_hakadosh": ruach
+        }
+        st.success("✅ Nasehat Mingguan tersimpan! Sudah terkoneksi ke Lembar Merah, Kuning, Hijau - Waspada ya sayang!")
+        st.balloons()
 
-    **GitHub:** AIchaliveret/saas_scm_fashion_market_v3
-    """)
-    c1,c2,c3 = st.columns(3)
-    c1.link_button("Instagram @cinhonest", "https://instagram.com/cinhonest")
-    c2.link_button("GitHub Repo V3", "https://github.com/AIchaliveret/saas_scm_fashion_market_v3")
-    c3.link_button("Facebook Even Garden", "https://facebook.com/even.garden.637384")
-    st.info("Market Int. Tanah Abang Kwitansi + ITC + Grocery Retail - ai.meta generate insights untuk Director")
-
-elif menu == "Director - Statistik Demand Planner Market Control":
-    st.header("Direktur Business Owner - Statistik Penjualan Menyeluruh - Survey Market - Demand Planner Market Control")
-    st.caption("Bagaimana caranya agar direktur business owner bisa menerima statistik penjualan secara menyeluruh sebagai survey market atau masukan langsung dari pihak penjual berdasarkan data pembelian actual dan adanya permintaan sebagai data masukan demand planner market control berupa grafik dan hitungan terakumulasi atas penjualan aktual dan permintaan - hukum permintaan berbanding survey market control ala syst meta.ai")
-    c1,c2,c3 = st.columns(3)
-    c1.metric("Penjualan Aktual Bulan Ini", "342 Kodi", "+18% vs last month")
-    c2.metric("Permintaan Request", "410 Kodi", "Gap 68 Kodi")
-    c3.metric("Hukum Permintaan", "Surplus Demand 19.8%", "Need produksi +25 Kodi")
-    df_sales = pd.DataFrame({
-        "Market":["Tanah Abang","ITC Pekalongan","IG Online","Shopee","TikTok","Grosir Solo/Jogja"],
-        "Actual":[120,75,68,45,20,14],
-        "Permintaan":[145,90,85,60,30,20]
-    })
-    st.bar_chart(df_sales, x="Market", y=["Actual","Permintaan"])
-    st.line_chart(pd.DataFrame({"Penjualan":[20,35,47,60,78,95,120],"Permintaan":[25,40,60,80,100,125,145]}))
-    st.success("AI.Meta Generate: Motif Parang Kusumo Blue Reactive naik 23% di Tanah Abang, stok Naptol AS-G critical (32kg → need 50kg), rekomendasi produksi 25 kodi 200cm | Buyer internasional Amerika Afrika China Thailand Vietnam request Mega Mendung")
-
-elif menu == "Live HTML Full V4":
-    st.header("SAAS SCM V4 Full HTML - Accurate + Vendor Notes + GPS")
-    html_path = "saas_scm_prototype_fashion_garment_market_control.html"
-    if os.path.exists(html_path):
-        with open(html_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
-        st.components.v1.html(html_content, height=800, scrolling=True)
-    else:
-        st.warning(f"File {html_path} belum ada di repo, upload file V4 dari /mnt/data/saas_scm_prototype_fashion_garment_market_control.html")
-        st.info("Upload file HTML V4 yang syst bikin tadi ke repo root")
+elif menu == "Members Ruang Teduh - 4 Kolom Mapping DKI":
+    st.title("📁 Members Ruang Teduh - 4 Kolom - Mapping DKI")
+    st.dataframe(pd.DataFrame([
+        ["Employee", "Chef / Staff / Boss Kios/Ruko/Rukan", "DKI Jakarta (buat hitung UMR) - Jakarta tetap Jakarta - Lockernya Jakarta", "https://drive.google.com/drive/folders/12n8a5PkcNPQH1rwZxQiRJ9p7376-oKOx"],
+        ["Entrepreneur", "Boss Kios/Ruko/Rukan", "DKI Jakarta - Pelamar dari Bandung bisa lihat", "https://drive.google.com/drive/folders/12n8a5PkcNPQH1rwZxQiRJ9p7376-oKOx"],
+    ], columns=["status", "skill", "provinsi/kota", "gdrive_folder"]), use_container_width=True)
+    st.caption("Ya sayang ini sudah bagus banget - tanpa detail kios/ruko/rukan tambahan - sudah ada kolom khusus mengetik penjelasan di lembar hijau perekrutan manager")
 
 st.divider()
-st.caption("SAAS.SCM.SYSTEM V3.5 - Vultr Agent Rush - Zero Blast Radius: sandbox-code - browser automation Playwright - verifiable output - security moment PC817 5kVrms + 1N4007 + BC337 - Future of Work: SDM Recruitment Ruang Teduh + Ruach Ha Kadosh | Team 7: Aku Bald Lead, Mr Soesendi Lim Tech Analyst, Mister Aliang Field Ops, Mister Budi, Mister Sandy | License Hak Cipta Kemenkominfo SUPER SECURE SYST v3.0 | Even Garden x Cerebral Valley x Vultr | meta.aichaliveret | super-infrared.local")
+st.caption("Ruang Teduh AI - FINAL MIRROR - ETIKA + SOP OEE ERP KPI + RUACH HAKADOSH - Editable Nasehat Mingguan - Koneksi Merah Kuning Hijau - Bursa Vote + Rekrut Independen Peer-to-Peer - Fix Email ke cinhonest@gmail.com & jugalachaliveret@gmail.com | Even Garden x Vultr Agent Rush Team 5")
