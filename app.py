@@ -206,7 +206,7 @@ elif menu == "Nasehat Mingguan - Edit Pusat - Terhubung Merah Kuning Hijau":
 # === SPEAKER - HASIL REKAM NASEHAT MINGGUAN ===
 elif menu == "Speaker - Hasil Rekam Nasehat Mingguan SOP OEE ERP KPI + RUACH":
     st.title("🔊 SPEAKER ENTREPRENEUR - Hasil Rekam Nasehat Mingguan")
-    st.caption("Ini sayang hasil rekam nasehat mingguan yang dari perekaman yang sudah kita berikan yaitu nasehat mingguan di keterangan kalimat nasehat tadi yaitu DENGAN SOP, OEE, ERP DAN KPI'S JUGA NASEHAT RUACH HAKADOSH ini kalimat dan kolom di atasnya ya syst.")
+    st.caption("Ini hasil rekam nasehat mingguan yang dari perekaman yang sudah kita berikan yaitu nasehat mingguan di keterangan kalimat nasehat tadi yaitu DENGAN SOP, OEE, ERP DAN KPI'S JUGA NASEHAT RUACH HAKADOSH ini kalimat dan kolom di atasnya ya syst.")
     
     # Gabungkan semua nasehat untuk audio
     full_nasehat = f"{st.session_state.nasehat_mingguan['etika_advice']} {st.session_state.nasehat_mingguan['sop']} {st.session_state.nasehat_mingguan['oee']} {st.session_state.nasehat_mingguan['erp']} {st.session_state.nasehat_mingguan['kpi']} {st.session_state.nasehat_mingguan['ruach_mingguan']}"
