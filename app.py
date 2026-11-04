@@ -130,7 +130,7 @@ if menu == "Lembar PUTIH - Pendaftaran 3 Pilar":
 # === MERAH ===
 elif menu == "Lembar MERAH - CV Komplit Employee (The Best)":
     st.title("❤️ LEMBAR MERAH - CV Komplit Employee - The Best")
-    st.caption("Ini semua sudah the best sayang tapi untuk Employee Staff/Supervisor - CV komplit")
+    st.caption("Ini semua sudah the best tapi untuk Employee Staff/Supervisor - CV komplit")
     st.dataframe(st.session_state.bursa_vote[st.session_state.bursa_vote['Status'].str.contains('Employee')], use_container_width=True)
     st.info("Lembar Merah ini terkoneksi ke Nasehat Mingguan Pusat - Edit di Nasehat Mingguan -> update di Merah Kuning Hijau")
 
